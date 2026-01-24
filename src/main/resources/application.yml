@@ -1,1 +1,23 @@
-spring.application.name=FantasyMusic
+spring:
+  application:
+    name: FantasyMusic
+  datasource:
+    driver-class-name: ${spring.datasource.url}
+    url: jdbc:mysql://${spring.datasource.mysql-connect.host}:${spring.datasource.mysql-connect.port}/fantasy_music?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: ${spring.datasource.username}
+    password: ${spring.datasource.password}
+  profiles:
+    active: local
+  servlet:
+    multipart:
+      max-file-size: 100MB # 上传文件最大值
+      max-request-size: 100MB # 上传请求最大值
+mybatis-plus:
+  configuration:
+    # MyBatis 配置
+    map-underscore-to-camel-case: true # 下划线转驼峰
+  global-config:
+    # 全局配置
+    db-config:
+      # 数据库配置
+      id-type: auto # 主键策略
