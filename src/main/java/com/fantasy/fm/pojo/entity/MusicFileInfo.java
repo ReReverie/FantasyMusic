@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
  * 用于表示音乐文件信息的实体类
  */
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @TableName("music_file_info")
 public class MusicFileInfo {
     private Long id;

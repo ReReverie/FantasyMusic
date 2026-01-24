@@ -1,0 +1,7 @@
+package com.fantasy.fm.constant;
+
+public class MusicConstant {
+    public static final String UNKNOWN_ARTIST = "未知艺术家";
+    public static final String UNKNOWN_ALBUM = "未知专辑";
+    public static final String UNKNOWN_RELEASE_YEAR = "未知发行年份";
+}

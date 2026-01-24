@@ -32,6 +32,10 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Source: https://mvnrepository.com/artifact/net.jthink/jaudiotagger
+    implementation("net.jthink:jaudiotagger:3.0.1")
+    implementation 'cn.hutool:hutool-all:5.8.43'
 }
 
 tasks.named('test') {
