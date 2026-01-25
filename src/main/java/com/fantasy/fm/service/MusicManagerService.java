@@ -1,7 +1,7 @@
 package com.fantasy.fm.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.fantasy.fm.pojo.entity.MusicFileInfo;
+import com.fantasy.fm.domain.entity.MusicFileInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;

@@ -1,12 +1,10 @@
-package com.fantasy.fm.pojo.entity;
+package com.fantasy.fm.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
 
 /**
  * 用于表示音乐信息的实体类

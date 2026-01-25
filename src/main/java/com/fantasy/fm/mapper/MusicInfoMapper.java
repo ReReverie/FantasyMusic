@@ -1,7 +1,7 @@
 package com.fantasy.fm.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.fantasy.fm.pojo.entity.Music;
+import com.fantasy.fm.domain.entity.Music;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper

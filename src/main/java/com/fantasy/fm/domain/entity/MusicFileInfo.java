@@ -1,4 +1,4 @@
-package com.fantasy.fm.pojo.entity;
+package com.fantasy.fm.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;

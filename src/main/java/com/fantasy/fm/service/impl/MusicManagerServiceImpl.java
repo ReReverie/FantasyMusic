@@ -3,7 +3,7 @@ package com.fantasy.fm.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.mapper.MusicManagerMapper;
-import com.fantasy.fm.pojo.entity.MusicFileInfo;
+import com.fantasy.fm.domain.entity.MusicFileInfo;
 import com.fantasy.fm.service.MusicManagerService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
