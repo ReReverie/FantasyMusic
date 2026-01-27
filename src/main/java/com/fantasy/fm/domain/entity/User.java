@@ -25,7 +25,6 @@ public class User implements Serializable {
     private String password; // 密码（加密存储）
     private String avatarUrl; // 头像URL
     private Integer userLevelValue; // 用户等级
-    private UserLevelEnum userLevel; // 用户等级枚举
     private LocalDateTime createdTime; // 创建时间
-    private LocalDateTime updateTime; // 更新时间（时间戳）
+    private LocalDateTime updateTime; // 更新时间
 }
