@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 /**
  * 用于表示音乐信息的实体类
  */
@@ -14,7 +16,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @TableName("music")
-public class Music {
+public class Music implements Serializable {
     private Long id;
     private String title; // 歌曲标题
     private String artist; // 歌手

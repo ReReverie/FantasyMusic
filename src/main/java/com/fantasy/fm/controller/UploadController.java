@@ -1,7 +1,7 @@
 package com.fantasy.fm.controller;
 
 import com.fantasy.fm.response.Result;
-import com.fantasy.fm.service.MusicInfoService;
+import com.fantasy.fm.service.MusicService;
 import com.fantasy.fm.service.MusicManagerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +23,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class UploadController {
 
-    private final MusicInfoService musicInfoService;
+    private final MusicService musicInfoService;
     private final MusicManagerService musicManagerServer;
 
     /**

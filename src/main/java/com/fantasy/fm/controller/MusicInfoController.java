@@ -3,7 +3,7 @@ package com.fantasy.fm.controller;
 import com.fantasy.fm.domain.entity.Music;
 import com.fantasy.fm.domain.vo.MusicListVO;
 import com.fantasy.fm.response.Result;
-import com.fantasy.fm.service.MusicInfoService;
+import com.fantasy.fm.service.MusicService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -19,7 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class MusicInfoController {
 
-    private final MusicInfoService musicInfoService;
+    private final MusicService musicInfoService;
 
     /**
      * 查询音乐列表
@@ -28,6 +28,7 @@ public class MusicInfoController {
      */
     @GetMapping
     public Result<List<MusicListVO>> queryMusicList() {
+        log.info("查询音乐列表");
         List<Music> list = musicInfoService.list();
         List<MusicListVO> musicListVOs = list.stream().map(music -> {
             MusicListVO vo = new MusicListVO();

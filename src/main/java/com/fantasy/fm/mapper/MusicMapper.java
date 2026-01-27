@@ -5,5 +5,5 @@ import com.fantasy.fm.domain.entity.Music;
 import org.apache.ibatis.annotations.Mapper;
 
 @Mapper
-public interface MusicInfoMapper extends BaseMapper<Music> {
+public interface MusicMapper extends BaseMapper<Music> {
 }

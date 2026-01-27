@@ -5,12 +5,13 @@ import com.fantasy.fm.enums.UserLevelEnum;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
 @TableName("user")
-public class User {
+public class User implements Serializable {
     private Long id;
     private String username; // 用户名
     private String nickname; // 昵称
