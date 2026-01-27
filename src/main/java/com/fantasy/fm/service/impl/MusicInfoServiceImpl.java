@@ -9,6 +9,7 @@ import com.fantasy.fm.domain.entity.Music;
 import com.fantasy.fm.domain.entity.MusicFileInfo;
 import com.fantasy.fm.service.MusicInfoService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.time.LocalDateTime;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MusicInfoServiceImpl extends ServiceImpl<MusicInfoMapper, Music> implements MusicInfoService {

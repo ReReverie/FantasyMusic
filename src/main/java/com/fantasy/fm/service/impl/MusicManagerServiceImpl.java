@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.mapper.MusicManagerMapper;
 import com.fantasy.fm.domain.entity.MusicFileInfo;
 import com.fantasy.fm.service.MusicManagerService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +15,7 @@ import java.io.IOException;
 /**
  * MusicManagerServer 服务实现类
  */
+@Slf4j
 @Service
 public class MusicManagerServiceImpl extends ServiceImpl<MusicManagerMapper, MusicFileInfo> implements MusicManagerService {
 
