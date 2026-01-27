@@ -1,14 +1,12 @@
 package com.fantasy.fm.controller;
 
+import com.fantasy.fm.response.Result;
 import com.fantasy.fm.service.MusicService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
@@ -28,5 +26,12 @@ public class MusicController {
     public ResponseEntity<Resource> downloadMusic(@PathVariable("id") Long musicId) {
         log.info("Downloading music. ID: {}", musicId);
         return musicService.downloadMusic(musicId);
+    }
+
+    @DeleteMapping("/{id}")
+    public Result<Void> deleteMusic(@PathVariable("id") Long musicId) {
+        log.info("Deleting music. ID: {}", musicId);
+        musicService.deleteByMusicId(musicId);
+        return Result.success();
     }
 }

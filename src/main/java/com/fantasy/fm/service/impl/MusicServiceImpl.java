@@ -1,6 +1,7 @@
 package com.fantasy.fm.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.MusicConstant;
 import com.fantasy.fm.mapper.MusicMapper;
@@ -114,5 +115,16 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
                 .contentType(MediaType.APPLICATION_OCTET_STREAM) // 设置为二进制流下载
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodeName) // 设置下载文件名
                 .body(resource);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByMusicId(Long musicId) {
+        // 删除音乐基本信息
+        musicMapper.deleteById(musicId);
+        // 使用LambdaQueryWrapper删除音乐文件信息,根据musicId字段
+        musicManagerMapper.delete(
+                new LambdaQueryWrapper<MusicFileInfo>()
+                        .eq(MusicFileInfo::getMusicId, musicId));
     }
 }
