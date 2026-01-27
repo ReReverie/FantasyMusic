@@ -1,7 +1,7 @@
 package com.fantasy.fm.controller;
 
 import com.fantasy.fm.domain.entity.Music;
-import com.fantasy.fm.domain.vo.MusicListVO;
+import com.fantasy.fm.domain.vo.MusicVO;
 import com.fantasy.fm.response.Result;
 import com.fantasy.fm.service.MusicService;
 import lombok.RequiredArgsConstructor;
@@ -27,14 +27,14 @@ public class MusicInfoController {
      * @return 音乐列表
      */
     @GetMapping
-    public Result<List<MusicListVO>> queryMusicList() {
+    public Result<List<MusicVO>> queryMusicList() {
         log.info("查询音乐列表");
         List<Music> list = musicInfoService.list();
-        List<MusicListVO> musicListVOs = list.stream().map(music -> {
-            MusicListVO vo = new MusicListVO();
+        List<MusicVO> musicVOS = list.stream().map(music -> {
+            MusicVO vo = new MusicVO();
             BeanUtils.copyProperties(music, vo);
             return vo;
         }).toList();
-        return Result.success(musicListVOs);
+        return Result.success(musicVOS);
     }
 }

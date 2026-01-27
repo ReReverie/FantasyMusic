@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class MusicListVO {
+public class MusicVO {
     private Long id;
     private String title; // 歌曲标题
     private String artist; // 歌手
