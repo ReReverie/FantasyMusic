@@ -21,3 +21,8 @@ mybatis-plus:
     db-config:
       # 数据库配置
       id-type: auto # 主键策略
+logging:
+  level:
+    com.fantasy: debug
+  console:
+    enabled: true
