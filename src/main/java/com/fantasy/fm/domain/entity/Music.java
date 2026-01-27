@@ -1,10 +1,10 @@
 package com.fantasy.fm.domain.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 
@@ -13,10 +13,9 @@ import java.io.Serializable;
  */
 @Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @TableName("music")
 public class Music implements Serializable {
+    @TableId(type = IdType.AUTO)
     private Long id;
     private String title; // 歌曲标题
     private String artist; // 歌手
