@@ -36,6 +36,12 @@ dependencies {
     // Source: https://mvnrepository.com/artifact/net.jthink/jaudiotagger
     implementation("net.jthink:jaudiotagger:3.0.1")
     implementation 'cn.hutool:hutool-all:5.8.43'
+    // Source: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
+    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+    // Source: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-jackson
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+    // Source: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-impl
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
 }
 
 tasks.named('test') {

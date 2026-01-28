@@ -26,3 +26,8 @@ logging:
     com.fantasy: debug
   console:
     enabled: true
+fm:
+  jwt:
+    secret-key: ${fm.jwt.secret-key}
+    expire-time: ${fm.jwt.expire-time}
+    token-name: ${fm.jwt.token-name}
