@@ -1,7 +1,9 @@
 package com.fantasy.fm.controller;
 
+import com.fantasy.fm.domain.dto.AddMusicToListDTO;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.entity.MusicList;
+import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
 import com.fantasy.fm.response.Result;
 import com.fantasy.fm.service.MusicListService;
@@ -32,13 +34,27 @@ public class MusicListController {
     }
 
     /**
+     * 添加音乐到歌单
+     */
+    @PostMapping("/addMusic")
+    public Result<Void> addMusicToList(@RequestBody AddMusicToListDTO addMusicToListDTO) {
+        //TODO 获取当前用户信息
+        Long userId = 1L;
+        log.info("User {} Adding music {} to music list {}", userId, addMusicToListDTO.getMusicListId(), addMusicToListDTO.getMusicId());
+        musicListService.addMusicToList(userId, addMusicToListDTO.getMusicListId(), addMusicToListDTO.getMusicId());
+        return Result.success();
+    }
+
+    /**
      * 获取歌单列表
      */
     @GetMapping("/list")
     public Result<List<MusicListVO>> getMusicLists() {
+        //TODO 获取当前用户信息
         //假设当前用户ID是1L
         Long userId = 1L;
         List<MusicList> list = musicListService.lambdaQuery()
+                .orderBy(true, false, MusicList::getCreateTime) // 按创建时间降序
                 .eq(MusicList::getUserId, userId).list();
         List<MusicListVO> musicListVOS = list.stream().map(musicList -> {
             MusicListVO vo = new MusicListVO();
@@ -46,5 +62,13 @@ public class MusicListController {
             return vo;
         }).toList();
         return Result.success(musicListVOS);
+    }
+
+    /**
+     * 获取歌单详情
+     */
+    @GetMapping("/{id}")
+    public Result<MusicListDetailVO> getMusicListDetail(@PathVariable Long id) {
+        return Result.success(musicListService.getDetailById(id));
     }
 }

@@ -4,6 +4,8 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.MusicConstant;
+import com.fantasy.fm.domain.entity.MusicListTrack;
+import com.fantasy.fm.mapper.MusicListTrackMapper;
 import com.fantasy.fm.mapper.MusicMapper;
 import com.fantasy.fm.mapper.MusicManagerMapper;
 import com.fantasy.fm.domain.entity.Music;
@@ -35,6 +37,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
 
     private final MusicMapper musicMapper;
     private final MusicManagerMapper musicManagerMapper;
+    private final MusicListTrackMapper musicListTrackMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -120,11 +123,15 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteByMusicId(Long musicId) {
+        log.info("Deleting music. ID: {}", musicId);
         // 删除音乐基本信息
         musicMapper.deleteById(musicId);
         // 使用LambdaQueryWrapper删除音乐文件信息,根据musicId字段
         musicManagerMapper.delete(
                 new LambdaQueryWrapper<MusicFileInfo>()
                         .eq(MusicFileInfo::getMusicId, musicId));
+        //同时删除对应的MusicListTrack记录
+        musicListTrackMapper.delete(new LambdaQueryWrapper<MusicListTrack>()
+                .eq(MusicListTrack::getMusicId, musicId));
     }
 }
