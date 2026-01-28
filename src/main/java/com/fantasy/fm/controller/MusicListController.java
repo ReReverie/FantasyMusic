@@ -75,4 +75,16 @@ public class MusicListController {
         musicListService.removeMusicFromList(userId, dto.getMusicListId(), dto.getMusicId());
         return Result.success();
     }
+
+    /**
+     * 删除歌单
+     */
+    @DeleteMapping("/{id}")
+    public Result<Void> deleteMusicList(@PathVariable Long id) {
+        //TODO 获取当前用户信息
+        Long userId = 1L;
+        log.info("User {} Deleting music list {}", userId, id);
+        musicListService.removeById(id);
+        return Result.success();
+    }
 }
