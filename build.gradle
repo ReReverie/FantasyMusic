@@ -27,6 +27,7 @@ repositories {
 dependencies {
     implementation 'com.baomidou:mybatis-plus-spring-boot4-starter:3.5.15'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.springframework.security:spring-security-crypto'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
