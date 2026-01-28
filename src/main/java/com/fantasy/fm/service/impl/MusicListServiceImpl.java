@@ -20,8 +20,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -87,6 +85,20 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     }
 
     @Override
+    public void removeMusicFromList(Long userId, Long musicListId, Long musicId) {
+        MusicList musicList = musicListMapper.selectById(musicListId);
+        if (musicList == null || !musicList.getUserId().equals(userId)) {
+            log.error("找不到音乐列表或用户未授权：musicListId={}， userId={}", musicListId, userId);
+            // throw new RuntimeException("找不到音乐列表或用户未授权");
+            return;
+        }
+        //根据musicListId和musicId删除对应的记录
+        musicListTrackMapper.delete(new LambdaQueryWrapper<MusicListTrack>()
+                .eq(MusicListTrack::getMusicListId, musicListId)
+                .eq(MusicListTrack::getMusicId, musicId));
+    }
+
+    @Override
     public MusicListDetailVO getDetailById(Long id) {
         MusicList musicList = musicListMapper.selectById(id);
         //健壮性检查,如果musicList为空,表示没有找到对应的歌单
@@ -107,6 +119,7 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     private @NonNull List<Music> getMusicList(Long id) {
         List<MusicListTrack> musicListTracks = musicListTrackMapper.selectList(
                 new LambdaQueryWrapper<MusicListTrack>()
+                        .orderBy(true, true, MusicListTrack::getCreateTime) // 按创建时间升序
                         .eq(MusicListTrack::getMusicListId, id));
         //根据musicListTracks获取对应的MusicID获取音乐列表
         return musicListTracks.stream()

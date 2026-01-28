@@ -1,6 +1,6 @@
 package com.fantasy.fm.controller;
 
-import com.fantasy.fm.domain.dto.AddMusicToListDTO;
+import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
@@ -35,11 +35,11 @@ public class MusicListController {
      * 添加音乐到歌单
      */
     @PostMapping("/addMusic")
-    public Result<Void> addMusicToList(@RequestBody AddMusicToListDTO addMusicToListDTO) {
+    public Result<Void> addMusicToList(@RequestBody OperaMusicListDTO dto) {
         //TODO 获取当前用户信息
         Long userId = 1L;
-        log.info("User {} Adding music {} to music list {}", userId, addMusicToListDTO.getMusicListId(), addMusicToListDTO.getMusicId());
-        musicListService.addMusicToList(userId, addMusicToListDTO.getMusicListId(), addMusicToListDTO.getMusicId());
+        log.info("User {} Adding music {} to music list {}", userId, dto.getMusicListId(), dto.getMusicId());
+        musicListService.addMusicToList(userId, dto.getMusicListId(), dto.getMusicId());
         return Result.success();
     }
 
@@ -51,6 +51,7 @@ public class MusicListController {
         //TODO 获取当前用户信息
         //假设当前用户ID是1L
         Long userId = 1L;
+        log.info("Fetching music lists for user {}", userId);
         return Result.success(musicListService.getMusicListsByUserId(userId));
     }
 
@@ -59,6 +60,19 @@ public class MusicListController {
      */
     @GetMapping("/{id}")
     public Result<MusicListDetailVO> getMusicListDetail(@PathVariable Long id) {
+        log.info("Fetching details for music list {}", id);
         return Result.success(musicListService.getDetailById(id));
+    }
+
+    /**
+     * 删除歌单中的音乐
+     */
+    @DeleteMapping("/removeMusic")
+    public Result<Void> removeMusicFromList(@RequestBody OperaMusicListDTO dto) {
+        //TODO 获取当前用户信息
+        Long userId = 1L;
+        log.info("User {} Removing music {} from music list {}", userId, dto.getMusicListId(), dto.getMusicId());
+        musicListService.removeMusicFromList(userId, dto.getMusicListId(), dto.getMusicId());
+        return Result.success();
     }
 }

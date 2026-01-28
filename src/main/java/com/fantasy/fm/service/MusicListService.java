@@ -28,4 +28,9 @@ public interface MusicListService extends IService<MusicList> {
      * 获取用户的歌单列表
      */
     List<MusicListVO> getMusicListsByUserId(Long userId);
+
+    /**
+     * 从歌单中移除音乐
+     */
+    void removeMusicFromList(Long userId, Long musicListId, Long musicId);
 }
