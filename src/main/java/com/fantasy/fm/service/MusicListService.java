@@ -2,6 +2,7 @@ package com.fantasy.fm.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
+import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.entity.MusicList;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
@@ -22,7 +23,7 @@ public interface MusicListService extends IService<MusicList> {
     /**
      * 添加音乐到歌单
      */
-    void addMusicToList(Long userId, Long musicListId, Long musicId);
+    void addMusicToList(OperaMusicListDTO operaMusicListDTO);
 
     /**
      * 获取用户的歌单列表
@@ -32,5 +33,5 @@ public interface MusicListService extends IService<MusicList> {
     /**
      * 从歌单中移除音乐
      */
-    void removeMusicFromList(Long userId, Long musicListId, Long musicId);
+    void removeMusicFromList(OperaMusicListDTO operaMusicListDTO);
 }

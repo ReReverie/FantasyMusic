@@ -2,7 +2,9 @@ package com.fantasy.fm.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
+import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.entity.Music;
 import com.fantasy.fm.domain.entity.MusicList;
 import com.fantasy.fm.domain.entity.MusicListTrack;
@@ -33,8 +35,8 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
 
     @Override
     public void createMusicList(CreateMusicListDTO createMusicListDTO) {
-        //TODO 假设用户ID是1L
-        Long userId = 1L;
+        //获取当前用户ID
+        Long userId = BaseContext.getCurrentId();
         musicListMapper.insert(MusicList.builder()
                 .userId(userId)
                 .title(createMusicListDTO.getTitle())
@@ -45,16 +47,16 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addMusicToList(Long userId, Long musicListId, Long musicId) {
-        MusicList musicList = musicListMapper.selectById(musicListId);
-        if (musicList == null || !musicList.getUserId().equals(userId)) {
-            log.error("找不到音乐列表或用户未授权：musicListId={}， userId={}", musicListId, userId);
+    public void addMusicToList(OperaMusicListDTO dto) {
+        MusicList musicList = musicListMapper.selectById(dto.getMusicListId());
+        if (musicList == null || !musicList.getUserId().equals(dto.getUserId())) {
+            log.error("找不到音乐列表或用户未授权：musicListId={}， userId={}", dto.getMusicListId(), dto.getUserId());
             // throw new RuntimeException("找不到音乐列表或用户未授权");
             return;
         }
         MusicListTrack musicListTrack = MusicListTrack.builder()
-                .musicListId(musicListId)
-                .musicId(musicId)
+                .musicListId(dto.getMusicListId())
+                .musicId(dto.getMusicId())
                 .createTime(LocalDateTime.now())
                 .build();
         // 往MusicListTrack表中插入记录
@@ -91,17 +93,17 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void removeMusicFromList(Long userId, Long musicListId, Long musicId) {
-        MusicList musicList = musicListMapper.selectById(musicListId);
-        if (musicList == null || !musicList.getUserId().equals(userId)) {
-            log.error("找不到音乐列表或用户未授权：musicListId={}， userId={}", musicListId, userId);
+    public void removeMusicFromList(OperaMusicListDTO dto) {
+        MusicList musicList = musicListMapper.selectById(dto.getMusicListId());
+        if (musicList == null || !musicList.getUserId().equals(dto.getUserId())) {
+            log.error("找不到音乐列表或用户未授权：musicListId={}， userId={}", dto.getMusicListId(), dto.getUserId());
             // throw new RuntimeException("找不到音乐列表或用户未授权");
             return;
         }
         //根据musicListId和musicId删除对应的记录
         musicListTrackMapper.delete(new LambdaQueryWrapper<MusicListTrack>()
-                .eq(MusicListTrack::getMusicListId, musicListId)
-                .eq(MusicListTrack::getMusicId, musicId));
+                .eq(MusicListTrack::getMusicListId, dto.getMusicListId())
+                .eq(MusicListTrack::getMusicId, dto.getMusicId()));
         // 更新MusicList的更新时间
         musicList.setUpdateTime(LocalDateTime.now());
         musicListMapper.updateById(musicList);

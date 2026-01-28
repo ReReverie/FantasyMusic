@@ -1,5 +1,6 @@
 package com.fantasy.fm.controller;
 
+import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
@@ -25,7 +26,6 @@ public class MusicListController {
      */
     @PostMapping("/create")
     public Result<Void> createMusicList(@RequestBody CreateMusicListDTO createMusicListDTO) {
-        //TODO 获取当前用户信息
         log.info("Creating music list: {}", createMusicListDTO);
         musicListService.createMusicList(createMusicListDTO);
         return Result.success();
@@ -36,10 +36,9 @@ public class MusicListController {
      */
     @PostMapping("/addMusic")
     public Result<Void> addMusicToList(@RequestBody OperaMusicListDTO dto) {
-        //TODO 获取当前用户信息
-        Long userId = 1L;
-        log.info("User {} Adding music {} to music list {}", userId, dto.getMusicListId(), dto.getMusicId());
-        musicListService.addMusicToList(userId, dto.getMusicListId(), dto.getMusicId());
+        dto.setUserId(BaseContext.getCurrentId());
+        log.info("User {} Adding music {} to music list {}", dto.getUserId(), dto.getMusicListId(), dto.getMusicId());
+        musicListService.addMusicToList(dto);
         return Result.success();
     }
 
@@ -48,9 +47,7 @@ public class MusicListController {
      */
     @GetMapping("/list")
     public Result<List<MusicListVO>> getMusicLists() {
-        //TODO 获取当前用户信息
-        //假设当前用户ID是1L
-        Long userId = 1L;
+        Long userId = BaseContext.getCurrentId();
         log.info("Fetching music lists for user {}", userId);
         return Result.success(musicListService.getMusicListsByUserId(userId));
     }
@@ -69,10 +66,9 @@ public class MusicListController {
      */
     @DeleteMapping("/removeMusic")
     public Result<Void> removeMusicFromList(@RequestBody OperaMusicListDTO dto) {
-        //TODO 获取当前用户信息
-        Long userId = 1L;
-        log.info("User {} Removing music {} from music list {}", userId, dto.getMusicListId(), dto.getMusicId());
-        musicListService.removeMusicFromList(userId, dto.getMusicListId(), dto.getMusicId());
+        dto.setUserId(BaseContext.getCurrentId());
+        log.info("User {} Removing music {} from music list {}", dto.getUserId(), dto.getMusicId(), dto.getMusicListId());
+        musicListService.removeMusicFromList(dto);
         return Result.success();
     }
 
@@ -81,8 +77,7 @@ public class MusicListController {
      */
     @DeleteMapping("/{id}")
     public Result<Void> deleteMusicList(@PathVariable Long id) {
-        //TODO 获取当前用户信息
-        Long userId = 1L;
+        Long userId = BaseContext.getCurrentId();
         log.info("User {} Deleting music list {}", userId, id);
         musicListService.removeById(id);
         return Result.success();
