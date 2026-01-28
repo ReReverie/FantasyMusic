@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.entity.MusicList;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
+import com.fantasy.fm.domain.vo.MusicListVO;
+
+import java.util.List;
 
 public interface MusicListService extends IService<MusicList> {
     /**
@@ -20,4 +23,9 @@ public interface MusicListService extends IService<MusicList> {
      * 添加音乐到歌单
      */
     void addMusicToList(Long userId, Long musicListId, Long musicId);
+
+    /**
+     * 获取用户的歌单列表
+     */
+    List<MusicListVO> getMusicListsByUserId(Long userId);
 }
