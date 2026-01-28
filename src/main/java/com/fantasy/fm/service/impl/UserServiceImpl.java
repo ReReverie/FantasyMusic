@@ -7,10 +7,12 @@ import com.fantasy.fm.Exception.UserNotFoundException;
 import com.fantasy.fm.constant.LoginConstant;
 import com.fantasy.fm.domain.dto.UserLoginDTO;
 import com.fantasy.fm.domain.entity.User;
+import com.fantasy.fm.domain.vo.UserInfoVO;
 import com.fantasy.fm.mapper.UserMapper;
 import com.fantasy.fm.service.UserService;
 import com.fantasy.fm.utils.PasswordUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -61,5 +63,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .username(username)
                 .password(encodePw)
                 .build());
+    }
+
+    @Override
+    public UserInfoVO getUserInfo(Long userId) {
+        UserInfoVO userInfoVO = new UserInfoVO();
+        BeanUtils.copyProperties(this.getById(userId), userInfoVO);
+        return userInfoVO;
     }
 }

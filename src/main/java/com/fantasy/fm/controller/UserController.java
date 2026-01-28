@@ -1,8 +1,10 @@
 package com.fantasy.fm.controller;
 
 import com.fantasy.fm.constant.LoginConstant;
+import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.domain.dto.UserLoginDTO;
 import com.fantasy.fm.domain.entity.User;
+import com.fantasy.fm.domain.vo.UserInfoVO;
 import com.fantasy.fm.domain.vo.UserLoginVO;
 import com.fantasy.fm.properties.JwtProperties;
 import com.fantasy.fm.response.Result;
@@ -10,10 +12,7 @@ import com.fantasy.fm.service.UserService;
 import com.fantasy.fm.utils.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 
@@ -64,4 +63,16 @@ public class UserController {
         userService.register(userLoginDTO);
         return Result.success();
     }
+
+    /**
+     * 获取当前用户信息
+     */
+    @GetMapping("/info")
+    public Result<UserInfoVO> getUserInfo() {
+        // 从线程变量中获取当前登录用户的ID
+        Long userId = BaseContext.getCurrentId();
+        return Result.success(userService.getUserInfo(userId));
+    }
+
+
 }

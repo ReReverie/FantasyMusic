@@ -3,6 +3,7 @@ package com.fantasy.fm.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fantasy.fm.domain.dto.UserLoginDTO;
 import com.fantasy.fm.domain.entity.User;
+import com.fantasy.fm.domain.vo.UserInfoVO;
 
 public interface UserService extends IService<User> {
     /**
@@ -17,4 +18,11 @@ public interface UserService extends IService<User> {
      * @param userLoginDTO 用户注册传输对象
      */
     void register(UserLoginDTO userLoginDTO);
+
+    /**
+     * 获取用户信息
+     * @param userId 用户ID
+     * @return 用户信息视图对象
+     */
+    UserInfoVO getUserInfo(Long userId);
 }
