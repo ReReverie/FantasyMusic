@@ -74,5 +74,11 @@ public class UserController {
         return Result.success(userService.getUserInfo(userId));
     }
 
-
+    /**
+     * 退出登录接口
+     */
+    @PostMapping("/logout")
+    public Result<String> logout() {
+        return Result.success(LoginConstant.LOGOUT_SUCCESS);
+    }
 }
