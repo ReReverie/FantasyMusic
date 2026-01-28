@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,6 +44,7 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void addMusicToList(Long userId, Long musicListId, Long musicId) {
         MusicList musicList = musicListMapper.selectById(musicListId);
         if (musicList == null || !musicList.getUserId().equals(userId)) {
@@ -57,6 +59,9 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
                 .build();
         // 往MusicListTrack表中插入记录
         musicListTrackMapper.insert(musicListTrack);
+        // 更新MusicList的更新时间
+        musicList.setUpdateTime(LocalDateTime.now());
+        musicListMapper.updateById(musicList);
     }
 
     @Override
@@ -85,6 +90,7 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void removeMusicFromList(Long userId, Long musicListId, Long musicId) {
         MusicList musicList = musicListMapper.selectById(musicListId);
         if (musicList == null || !musicList.getUserId().equals(userId)) {
@@ -96,6 +102,9 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
         musicListTrackMapper.delete(new LambdaQueryWrapper<MusicListTrack>()
                 .eq(MusicListTrack::getMusicListId, musicListId)
                 .eq(MusicListTrack::getMusicId, musicId));
+        // 更新MusicList的更新时间
+        musicList.setUpdateTime(LocalDateTime.now());
+        musicListMapper.updateById(musicList);
     }
 
     @Override
