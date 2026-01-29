@@ -1,9 +1,7 @@
 package com.fantasy.fm.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fantasy.fm.Exception.PasswordInvalidException;
-import com.fantasy.fm.Exception.UserAlreadyExistsException;
-import com.fantasy.fm.Exception.UserNotFoundException;
+import com.fantasy.fm.Exception.*;
 import com.fantasy.fm.constant.LoginConstant;
 import com.fantasy.fm.domain.dto.UserLoginDTO;
 import com.fantasy.fm.domain.entity.User;
@@ -38,7 +36,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //验证密码是否正确
         if (!PasswordUtil.matches(password, user.getPassword())) {
             log.info("用户登录失败，密码错误：{}", userLoginDTO);
-            throw new PasswordInvalidException(LoginConstant.INVALID_PASSWORD);
+            throw new PasswordErrorException(LoginConstant.ERROR_PASSWORD);
         }
 
         return user;
@@ -48,6 +46,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void register(UserLoginDTO userLoginDTO) {
         String username = userLoginDTO.getUsername();
         String password = userLoginDTO.getPassword();
+
+        //对用户名的合法性进行校验:不少于 3 位，不能是纯数字
+        if (!username.matches(LoginConstant.USERNAME_REGEX)) {
+            log.info("用户注册失败，用户名不合法：{}", userLoginDTO);
+            throw new UsernameInvalidException(LoginConstant.USERNAME_INVALID);
+        }
+
+        //对密码的合法性进行校验:8–24 位，必须包含大小写字母，允许特殊字符
+        if (!password.matches(LoginConstant.PASSWORD_REGEX)) {
+            log.info("用户注册失败，密码不合法：{}", userLoginDTO);
+            throw new PasswordInvalidException(LoginConstant.INVALID_PASSWORD);
+        }
 
         User existingUser = this.lambdaQuery()
                 .eq(User::getUsername, username)
