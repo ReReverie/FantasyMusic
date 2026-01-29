@@ -6,6 +6,9 @@ import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.properties.JwtProperties;
 import com.fantasy.fm.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -31,31 +34,57 @@ public class LoginInterceptor implements HandlerInterceptor {
      */
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        //从请求头中获取令牌
         String token = request.getHeader(jwtProperties.getTokenName());
+        log.info("登录拦截器，获取到的令牌: {}", token);
 
-        //校验令牌
-        log.info("登录拦截器，获取到的令牌:{}", token);
-        //健壮性校验
-        if (StrUtil.isNotBlank(token)) {
-            Claims claims;
-            try {
-                claims = JwtUtil.parseToken(jwtProperties.getSecretKey(), token);
-            } catch (Exception e) {
-                //响应401状态码
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                return false;
-            }
-            Long userId = Long.valueOf(claims.get(LoginConstant.USER_ID).toString());
-            log.info("当前用户id：{}", userId);
-            //将当前用户id存入线程变量
-            BaseContext.setCurrentId(userId);
-            return true;
-        } else {
-            //响应401状态码
+        // 1. 令牌为空或空白
+        if (StrUtil.isBlank(token)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return false;
         }
+
+        // 2. 解析 JWT
+        Claims claims;
+        try {
+            claims = JwtUtil.parseToken(jwtProperties.getSecretKey(), token);
+        } catch (ExpiredJwtException e) {
+            log.warn("JWT 已过期: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return false;
+        } catch (SignatureException e) {
+            log.warn("JWT 签名验证失败: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return false;
+        } catch (MalformedJwtException e) {
+            log.warn("JWT 格式错误: {}", e.getMessage());
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return false;
+        } catch (Exception e) {
+            log.error("JWT 解析未知异常", e);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return false;
+        }
+
+        // 3. 获取用户ID（防御式编程）
+        Object userIdObj = claims.get(LoginConstant.USER_ID);
+        if (userIdObj == null) {
+            log.warn("JWT 中未包含用户ID");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return false;
+        }
+
+        Long userId;
+        try {
+            userId = Long.valueOf(userIdObj.toString());
+        } catch (NumberFormatException e) {
+            log.warn("用户ID格式错误: {}", userIdObj);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return false;
+        }
+
+        log.info("当前用户id: {}", userId);
+        BaseContext.setCurrentId(userId);
+        return true;
     }
 
     @Override
