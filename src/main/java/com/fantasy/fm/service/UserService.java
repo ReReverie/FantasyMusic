@@ -25,4 +25,10 @@ public interface UserService extends IService<User> {
      * @return 用户信息视图对象
      */
     UserInfoVO getUserInfo(Long userId);
+
+    /**
+     * 更新用户信息
+     * @param userInfoVO 用户信息视图对象
+     */
+    void updateUserInfo(UserInfoVO userInfoVO);
 }

@@ -3,8 +3,6 @@ package com.fantasy.fm.domain.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.fantasy.fm.enums.UserLevelEnum;
-import lombok.Builder;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -14,7 +12,6 @@ import java.time.LocalDateTime;
  * 用户实体类
  */
 @Data
-@Builder
 @TableName("user")
 public class User implements Serializable {
     @TableId(type = IdType.AUTO)

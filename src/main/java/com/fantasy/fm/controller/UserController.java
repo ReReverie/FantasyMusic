@@ -75,6 +75,16 @@ public class UserController {
     }
 
     /**
+     * 修改个人信息
+     */
+    @PutMapping("/update")
+    public Result<Void> updateUserInfo(@RequestBody UserInfoVO userInfoVO) {
+        // 从线程变量中获取当前登录用户的ID
+        userService.updateUserInfo(userInfoVO);
+        return Result.success();
+    }
+
+    /**
      * 退出登录接口
      */
     @PostMapping("/logout")

@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
@@ -58,17 +60,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //对用户密码进行加密处理
         String encodePw = PasswordUtil.encodePassword(password);
 
+        User user = new User();
+        user.setUsername(username);
+        user.setPassword(encodePw);
+        user.setCreatedTime(LocalDateTime.now());
+        user.setUpdateTime(LocalDateTime.now());
         //保存用户信息到数据库
-        this.save(User.builder()
-                .username(username)
-                .password(encodePw)
-                .build());
+        this.save(user);
     }
 
     @Override
     public UserInfoVO getUserInfo(Long userId) {
+        log.info("获取用户信息，用户ID：{}", userId);
         UserInfoVO userInfoVO = new UserInfoVO();
         BeanUtils.copyProperties(this.getById(userId), userInfoVO);
         return userInfoVO;
+    }
+
+    @Override
+    public void updateUserInfo(UserInfoVO userInfoVO) {
+        log.info("更新用户信息：{}", userInfoVO);
+        User user = new User();
+        BeanUtils.copyProperties(userInfoVO, user);
+        user.setUpdateTime(LocalDateTime.now());
+        this.updateById(user);
     }
 }
