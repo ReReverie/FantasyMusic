@@ -2,6 +2,7 @@ package com.fantasy.fm.controller;
 
 import com.fantasy.fm.constant.LoginConstant;
 import com.fantasy.fm.context.BaseContext;
+import com.fantasy.fm.domain.dto.UpdatePasswordDTO;
 import com.fantasy.fm.domain.dto.UserLoginDTO;
 import com.fantasy.fm.domain.entity.User;
 import com.fantasy.fm.domain.vo.UserInfoVO;
@@ -80,8 +81,18 @@ public class UserController {
      */
     @PutMapping("/update")
     public Result<Void> updateUserInfo(@RequestBody UserInfoVO userInfoVO) {
-        // 从线程变量中获取当前登录用户的ID
         userService.updateUserInfo(userInfoVO);
+        return Result.success();
+    }
+
+    /**
+     * 修改用户密码
+     */
+    @PutMapping("/password")
+    public Result<Void> updatePassword(@RequestBody UpdatePasswordDTO updatePasswordDTO) {
+        // 从线程变量中获取当前登录用户的ID
+        updatePasswordDTO.setUserId(BaseContext.getCurrentId());
+        userService.updatePassword(updatePasswordDTO);
         return Result.success();
     }
 

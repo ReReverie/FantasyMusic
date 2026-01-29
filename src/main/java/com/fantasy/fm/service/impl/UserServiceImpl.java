@@ -3,6 +3,7 @@ package com.fantasy.fm.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.Exception.*;
 import com.fantasy.fm.constant.LoginConstant;
+import com.fantasy.fm.domain.dto.UpdatePasswordDTO;
 import com.fantasy.fm.domain.dto.UserLoginDTO;
 import com.fantasy.fm.domain.entity.User;
 import com.fantasy.fm.domain.vo.UserInfoVO;
@@ -92,6 +93,42 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         log.info("更新用户信息：{}", userInfoVO);
         User user = new User();
         BeanUtils.copyProperties(userInfoVO, user);
+        user.setUpdateTime(LocalDateTime.now());
+        this.updateById(user);
+    }
+
+    @Override
+    public void updatePassword(UpdatePasswordDTO updatePasswordDTO) {
+        Long userId = updatePasswordDTO.getUserId();
+        String oldPassword = updatePasswordDTO.getOldPassword();
+        String newPassword = updatePasswordDTO.getNewPassword();
+        //获取当前用户信息
+        User user = this.getById(userId);
+
+        //验证旧密码是否正确
+        if (!PasswordUtil.matches(oldPassword, user.getPassword())) {
+            log.info("更新用户密码失败，旧密码错误：{}", updatePasswordDTO);
+            throw new PasswordErrorException(LoginConstant.ERROR_PASSWORD);
+        }
+
+        //对新密码进行加密处理
+        //先判断新密码是否合法:8–24 位，必须包含大小写字母，允许特殊字符
+        if (!newPassword.matches(LoginConstant.PASSWORD_REGEX)) {
+            log.info("更新用户密码失败，新密码不合法：{}", updatePasswordDTO);
+            throw new PasswordInvalidException(LoginConstant.INVALID_PASSWORD);
+        }
+
+        //防止新密码与旧密码相同
+        if (PasswordUtil.matches(newPassword, user.getPassword())) {
+            log.info("更新用户密码失败，新密码与旧密码相同：{}", updatePasswordDTO);
+            throw new NewPasswordSameAsOldException(LoginConstant.NEW_PASSWORD_OLD_SAME);
+        }
+
+        //对新密码进行加密处理
+        String encodeNewPassword = PasswordUtil.encodePassword(newPassword);
+
+        //更新用户密码
+        user.setPassword(encodeNewPassword);
         user.setUpdateTime(LocalDateTime.now());
         this.updateById(user);
     }
