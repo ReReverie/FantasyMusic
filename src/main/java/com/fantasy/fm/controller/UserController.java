@@ -47,6 +47,7 @@ public class UserController {
         //构建登录响应结果
         UserLoginVO result = UserLoginVO.builder()
                 .id(user.getId())
+                .username(user.getUsername())
                 .nickname(user.getNickname())
                 .token(token)
                 .build();
