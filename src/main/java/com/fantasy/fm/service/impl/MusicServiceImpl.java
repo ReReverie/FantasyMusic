@@ -2,9 +2,14 @@ package com.fantasy.fm.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.MusicConstant;
+import com.fantasy.fm.domain.dto.PageDTO;
 import com.fantasy.fm.domain.entity.MusicListTrack;
+import com.fantasy.fm.domain.query.MusicPageQuery;
+import com.fantasy.fm.domain.vo.MusicVO;
 import com.fantasy.fm.mapper.MusicListTrackMapper;
 import com.fantasy.fm.mapper.MusicMapper;
 import com.fantasy.fm.mapper.MusicManagerMapper;
@@ -17,6 +22,7 @@ import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
+import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +35,8 @@ import java.io.File;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -133,5 +141,15 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         //同时删除对应的MusicListTrack记录
         musicListTrackMapper.delete(new LambdaQueryWrapper<MusicListTrack>()
                 .eq(MusicListTrack::getMusicId, musicId));
+    }
+
+    @Override
+    public PageDTO<MusicVO> queryMusicPage(MusicPageQuery query) {
+        // 构建分页查询对象
+        Page<Music> page = Page.of(query.getPageNum(), query.getPageSize());
+        // 执行分页查询
+        page = musicMapper.selectPage(page, null);
+        // 将分页结果转换为 PageDTO<MusicVO>并返回
+        return PageDTO.of(page, MusicVO.class);
     }
 }
