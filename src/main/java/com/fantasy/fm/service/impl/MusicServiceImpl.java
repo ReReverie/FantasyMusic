@@ -2,7 +2,6 @@ package com.fantasy.fm.service.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.MusicConstant;
@@ -22,7 +21,6 @@ import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
-import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -35,8 +33,6 @@ import java.io.File;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -51,8 +47,8 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     @Transactional(rollbackFor = Exception.class)
     public void saveFileInfo(File musicFile) {
         //获取音乐元数据信息
-        AudioFile audioFile = null;
-        Music musicInfo = null;
+        AudioFile audioFile;
+        Music musicInfo;
         Long musicId = null;
         try {
             audioFile = AudioFileIO.read(musicFile);
