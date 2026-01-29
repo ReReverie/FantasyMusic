@@ -1,13 +1,16 @@
 package com.fantasy.fm.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
+import com.fantasy.fm.domain.dto.PageDTO;
 import com.fantasy.fm.domain.entity.Music;
 import com.fantasy.fm.domain.entity.MusicList;
 import com.fantasy.fm.domain.entity.MusicListTrack;
+import com.fantasy.fm.domain.query.MusicListPageQuery;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
 import com.fantasy.fm.mapper.MusicListMapper;
@@ -107,6 +110,17 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
         // 更新MusicList的更新时间
         musicList.setUpdateTime(LocalDateTime.now());
         musicListMapper.updateById(musicList);
+    }
+
+    @Override
+    public PageDTO<MusicListVO> queryMusicListPage(MusicListPageQuery query) {
+        // 构建分页查询条件
+        Page<MusicList> page = Page.of(query.getPageNum(), query.getPageSize());
+        // 根据用户ID查询歌单列表
+        page = musicListMapper.selectPage(page, new LambdaQueryWrapper<MusicList>()
+                .eq(MusicList::getUserId, query.getUserId()));
+        // 转换为PageDTO<MusicListVO>返回
+        return PageDTO.of(page, MusicListVO.class);
     }
 
     @Override

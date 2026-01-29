@@ -4,6 +4,6 @@ import lombok.Data;
 
 @Data
 public class MusicPageQuery {
-    private Integer pageNum = 1;
-    private Integer pageSize = 20;
+    private Long pageNum = 1L;
+    private Long pageSize = 20L;
 }

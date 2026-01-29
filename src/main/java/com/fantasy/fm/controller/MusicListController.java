@@ -3,6 +3,8 @@ package com.fantasy.fm.controller;
 import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
+import com.fantasy.fm.domain.dto.PageDTO;
+import com.fantasy.fm.domain.query.MusicListPageQuery;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
 import com.fantasy.fm.response.Result;
@@ -50,6 +52,16 @@ public class MusicListController {
         Long userId = BaseContext.getCurrentId();
         log.info("Fetching music lists for user {}", userId);
         return Result.success(musicListService.getMusicListsByUserId(userId));
+    }
+
+    /**
+     * 分页获取歌单列表
+     */
+    @PostMapping("/page")
+    public Result<PageDTO<MusicListVO>> getMusicListPage(@RequestBody MusicListPageQuery query) {
+        query.setUserId(BaseContext.getCurrentId());
+        log.info("分页查询音乐列表,当前用户{}: pageNum={}, pageSize={}", query.getUserId(), query.getPageNum(), query.getPageSize());
+        return Result.success(musicListService.queryMusicListPage(query));
     }
 
     /**
