@@ -57,8 +57,8 @@ public class MusicListController {
     /**
      * 分页获取歌单列表
      */
-    @PostMapping("/page")
-    public Result<PageDTO<MusicListVO>> getMusicListPage(@RequestBody MusicListPageQuery query) {
+    @GetMapping("/page")
+    public Result<PageDTO<MusicListVO>> getMusicListPage(MusicListPageQuery query) {
         query.setUserId(BaseContext.getCurrentId());
         log.info("分页查询音乐列表,当前用户{}: pageNum={}, pageSize={}", query.getUserId(), query.getPageNum(), query.getPageSize());
         return Result.success(musicListService.queryMusicListPage(query));
