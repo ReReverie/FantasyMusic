@@ -3,6 +3,7 @@ package com.fantasy.fm.domain.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fantasy.fm.enums.UserLevelEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -21,7 +22,7 @@ public class User implements Serializable {
     private String email; // 邮箱
     private String password; // 密码（加密存储）
     private String avatarUrl; // 头像URL
-    private Integer userLevelValue; // 用户等级
+    private UserLevelEnum userLevelValue; // 用户等级
     private LocalDateTime createdTime; // 创建时间
     private LocalDateTime updateTime; // 更新时间
 }

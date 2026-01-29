@@ -1,5 +1,6 @@
 package com.fantasy.fm.domain.vo;
 
+import com.fantasy.fm.enums.UserLevelEnum;
 import lombok.Data;
 
 @Data
@@ -9,5 +10,5 @@ public class UserInfoVO {
     private String nickname;
     private String email;
     private String avatarUrl; // 头像URL
-    private Integer userLevelValue; // 用户等级
+    private UserLevelEnum userLevelValue; // 用户等级
 }

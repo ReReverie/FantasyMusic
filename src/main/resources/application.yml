@@ -16,6 +16,7 @@ mybatis-plus:
   configuration:
     # MyBatis 配置
     map-underscore-to-camel-case: true # 下划线转驼峰
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler # 全局枚举处理器
   global-config:
     # 全局配置
     db-config:
