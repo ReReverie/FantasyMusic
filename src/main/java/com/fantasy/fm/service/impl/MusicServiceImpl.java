@@ -34,6 +34,7 @@ import java.io.File;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -149,5 +150,18 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         page = musicMapper.selectPage(page, null);
         // 将分页结果转换为 PageDTO<MusicVO>并返回
         return PageDTO.of(page, MusicVO.class);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void batchDeleteMusicByIds(List<Long> ids) {
+        //删除音乐信息
+        musicMapper.deleteByIds(ids);
+        //删除音乐文件信息
+        musicManagerMapper.delete(new LambdaQueryWrapper<MusicFileInfo>()
+                .in(MusicFileInfo::getMusicId, ids));
+        //删除对应的MusicListTrack记录
+        musicListTrackMapper.delete(new LambdaQueryWrapper<MusicListTrack>()
+                .in(MusicListTrack::getMusicId, ids));
     }
 }

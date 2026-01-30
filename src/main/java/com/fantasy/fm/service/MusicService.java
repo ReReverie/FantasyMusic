@@ -9,6 +9,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
 import java.io.File;
+import java.util.List;
 
 public interface MusicService extends IService<Music> {
     /**
@@ -47,4 +48,11 @@ public interface MusicService extends IService<Music> {
      * @return 音乐列表
      */
     PageDTO<MusicVO> queryMusicPage(MusicPageQuery query);
+
+    /**
+     * 批量删除音乐
+     *
+     * @param ids 音乐ID列表
+     */
+    void batchDeleteMusicByIds(List<Long> ids);
 }
