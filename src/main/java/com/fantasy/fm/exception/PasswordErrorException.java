@@ -1,4 +1,4 @@
-package com.fantasy.fm.Exception;
+package com.fantasy.fm.exception;
 
 public class PasswordErrorException extends BaseException {
     public PasswordErrorException(String message) {

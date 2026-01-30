@@ -1,4 +1,4 @@
-package com.fantasy.fm.Exception;
+package com.fantasy.fm.exception;
 
 public class UsernameInvalidException extends BaseException {
     public UsernameInvalidException(String message) {

@@ -1,4 +1,4 @@
-package com.fantasy.fm.Exception;
+package com.fantasy.fm.exception;
 
 public class NewPasswordSameAsOldException extends BaseException {
     public NewPasswordSameAsOldException(String message) {
