@@ -1,5 +1,6 @@
 package com.fantasy.fm.controller;
 
+import com.fantasy.fm.constant.MusicConstant;
 import com.fantasy.fm.response.Result;
 import com.fantasy.fm.service.MusicService;
 import com.fantasy.fm.service.MusicManagerService;
@@ -36,7 +37,7 @@ public class UploadController {
         log.info("上传的文件名: {}", multipartFile.getOriginalFilename());
         File musicFile = musicManagerServer.saveFile(multipartFile);
         if (musicFile == null) {
-            return Result.error("文件上传失败");
+            return Result.error(MusicConstant.MUSIC_UPLOAD_FAILURE);
         }
         musicInfoService.saveFileInfo(musicFile);
         return Result.success();
