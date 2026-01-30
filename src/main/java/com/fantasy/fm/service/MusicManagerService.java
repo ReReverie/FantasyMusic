@@ -5,7 +5,6 @@ import com.fantasy.fm.domain.entity.MusicFileInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
 
 /**
  * MusicManagerServer 服务类

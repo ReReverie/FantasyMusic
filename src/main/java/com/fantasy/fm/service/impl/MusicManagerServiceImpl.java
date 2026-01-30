@@ -31,7 +31,7 @@ public class MusicManagerServiceImpl extends ServiceImpl<MusicManagerMapper, Mus
         if (StrUtil.isBlank(originalFilename)) {
             return null;
         }
-        String filePath = null;
+        String filePath;
         String path = System.getProperty("user.dir") + File.separator + "musicfile";
         filePath = path + "/" + originalFilename;
         File musicFile = new File(filePath);

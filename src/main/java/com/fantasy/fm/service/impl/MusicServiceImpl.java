@@ -9,7 +9,6 @@ import com.fantasy.fm.domain.dto.PageDTO;
 import com.fantasy.fm.domain.entity.MusicListTrack;
 import com.fantasy.fm.domain.query.MusicPageQuery;
 import com.fantasy.fm.domain.vo.MusicVO;
-import com.fantasy.fm.enums.AudioFormatEnum;
 import com.fantasy.fm.mapper.MusicListTrackMapper;
 import com.fantasy.fm.mapper.MusicMapper;
 import com.fantasy.fm.mapper.MusicManagerMapper;

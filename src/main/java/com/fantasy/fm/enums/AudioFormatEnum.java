@@ -1,5 +1,6 @@
 package com.fantasy.fm.enums;
 
+import com.fantasy.fm.constant.MusicConstant;
 import com.fantasy.fm.exception.NotSupportAudioFormatException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -26,7 +27,7 @@ public enum AudioFormatEnum {
                 return;
             }
         }
-        throw new NotSupportAudioFormatException("不支持的音频格式: " + ext);
+        throw new NotSupportAudioFormatException(MusicConstant.NOT_SUPPORT_AUDIO_FORMAT + ext);
     }
 }
 
