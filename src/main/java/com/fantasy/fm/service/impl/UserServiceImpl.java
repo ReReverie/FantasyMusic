@@ -1,7 +1,7 @@
 package com.fantasy.fm.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.fantasy.fm.Exception.*;
+import com.fantasy.fm.exception.*;
 import com.fantasy.fm.constant.LoginConstant;
 import com.fantasy.fm.domain.dto.UpdatePasswordDTO;
 import com.fantasy.fm.domain.dto.UserLoginDTO;

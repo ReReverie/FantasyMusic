@@ -1,6 +1,6 @@
 package com.fantasy.fm.handler;
 
-import com.fantasy.fm.Exception.BaseException;
+import com.fantasy.fm.exception.BaseException;
 import com.fantasy.fm.constant.MusicListConstant;
 import com.fantasy.fm.response.Result;
 import lombok.extern.slf4j.Slf4j;

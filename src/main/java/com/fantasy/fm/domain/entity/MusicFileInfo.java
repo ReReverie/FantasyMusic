@@ -1,6 +1,7 @@
 package com.fantasy.fm.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Builder;
@@ -25,4 +26,5 @@ public class MusicFileInfo {
     private LocalDateTime uploadTime; // 上传时间
     private LocalDateTime createTime; // 创建时间
     private LocalDateTime updateTime; // 更新时间
+    private String fileHash; // 文件校验和,哈希值
 }

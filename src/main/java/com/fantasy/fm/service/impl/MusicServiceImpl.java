@@ -9,6 +9,7 @@ import com.fantasy.fm.domain.dto.PageDTO;
 import com.fantasy.fm.domain.entity.MusicListTrack;
 import com.fantasy.fm.domain.query.MusicPageQuery;
 import com.fantasy.fm.domain.vo.MusicVO;
+import com.fantasy.fm.enums.AudioFormatEnum;
 import com.fantasy.fm.mapper.MusicListTrackMapper;
 import com.fantasy.fm.mapper.MusicMapper;
 import com.fantasy.fm.mapper.MusicManagerMapper;
@@ -45,7 +46,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void saveFileInfo(File musicFile) {
+    public void saveFileInfo(File musicFile, String fileHash) {
         //获取音乐元数据信息
         AudioFile audioFile;
         Music musicInfo;
@@ -77,6 +78,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
                 .uploadTime(LocalDateTime.now())
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
+                .fileHash(fileHash)
                 .build();
         musicManagerMapper.insert(mfi);
     }

@@ -15,8 +15,22 @@ public interface MusicManagerService extends IService<MusicFileInfo> {
     /**
      * 保存文件并返回文件路径
      * @param multipartFile 上传的文件
+     * @param fileHash 前端计算的哈希值
      * @return 文件对象
-     * @throws IOException 可能抛出的IO异常
      */
-    File saveFile(MultipartFile multipartFile) throws IOException;
+    File saveFile(MultipartFile multipartFile, String fileHash);
+
+    /**
+     * 根据文件哈希获取音乐文件信息
+     * @param fileHash 文件哈希值
+     * @return 音乐文件信息
+     */
+    MusicFileInfo getByFileHash(String fileHash);
+
+    /**
+     * 计算文件的哈希值
+     * @param multipartFile 上传的文件
+     * @return 文件的哈希值
+     */
+    String calculateHash(MultipartFile multipartFile);
 }
