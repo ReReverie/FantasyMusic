@@ -1,6 +1,7 @@
 package com.fantasy.fm.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.exception.*;
 import com.fantasy.fm.constant.LoginConstant;
 import com.fantasy.fm.domain.dto.UpdatePasswordDTO;
@@ -28,8 +29,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public User login(UserLoginDTO userLoginDTO) {
         String username = userLoginDTO.getUsername();
-        String password = getDecryptPassword(userLoginDTO.getPassword());
-
         //根据用户名查询用户信息
         User user = this.lambdaQuery()
                 .eq(User::getUsername, username)
@@ -39,6 +38,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             log.info("用户登录失败，用户未找到：{}", userLoginDTO);
             throw new UserNotFoundException(LoginConstant.USER_NOT_FOUND);
         }
+
+        //如果执行到这里，说明用户存在，验证密码
+        String password = getDecryptPassword(userLoginDTO.getPassword());
 
         //验证密码是否正确
         if (!PasswordUtil.matches(password, user.getPassword())) {
@@ -116,7 +118,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void updateUserInfo(UserInfoVO userInfoVO) {
         log.info("更新用户信息：{}", userInfoVO);
         User user = new User();
-        BeanUtils.copyProperties(userInfoVO, user);
+        user.setId(BaseContext.getCurrentId());
+        user.setNickname(userInfoVO.getNickname());
+        user.setAvatarUrl(userInfoVO.getAvatarUrl());
+        user.setEmail(userInfoVO.getEmail());
         user.setUpdateTime(LocalDateTime.now());
         this.updateById(user);
     }
