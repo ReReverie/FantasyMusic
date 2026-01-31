@@ -1,5 +1,7 @@
 package com.fantasy.fm.utils.security;
 
+import com.fantasy.fm.properties.LoginProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -10,13 +12,18 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
 @Component
+@RequiredArgsConstructor
 public class RSADecryptor {
 
-    @Value("${fm.login.private-key-string}")
-    private String privateKeyString;
+    private final LoginProperties loginProperties;
 
     public String decrypt(String encryptedText) throws Exception {
-        byte[] keyBytes = Base64.getDecoder().decode(privateKeyString);
+        //如果没有开启加密，直接返回原文
+        if (!loginProperties.getIsEnablePasswordEncrypt()) {
+            return encryptedText;
+        }
+
+        byte[] keyBytes = Base64.getDecoder().decode(loginProperties.getPrivateKeyString());
         PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
         KeyFactory kf = KeyFactory.getInstance("RSA");
         PrivateKey privateKey = kf.generatePrivate(spec);

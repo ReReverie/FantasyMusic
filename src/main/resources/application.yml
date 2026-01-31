@@ -41,4 +41,5 @@ fm:
     expire-time: ${fm.jwt.expire-time}
     token-name: ${fm.jwt.token-name}
   login:
+    is-enable-password-encrypt: ${fm.login.is-enable-password-encrypt}
     private-key-string: ${fm.login.private-key-string}
