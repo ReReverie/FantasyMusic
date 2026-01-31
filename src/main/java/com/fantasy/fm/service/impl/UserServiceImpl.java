@@ -128,7 +128,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void updatePassword(UpdatePasswordDTO updatePasswordDTO) {
-        Long userId = updatePasswordDTO.getUserId();
+        Long userId = BaseContext.getCurrentId();
         String oldPassword = updatePasswordDTO.getOldPassword();
         String newPassword = updatePasswordDTO.getNewPassword();
         //获取当前用户信息

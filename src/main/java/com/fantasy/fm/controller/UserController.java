@@ -77,9 +77,8 @@ public class UserController {
     @Operation(summary = "获取当前用户信息", description = "获取当前登录用户的详细信息")
     @GetMapping("/info")
     public Result<UserInfoVO> getUserInfo() {
-        // 从线程变量中获取当前登录用户的ID
-        Long userId = BaseContext.getCurrentId();
-        return Result.success(userService.getUserInfo(userId));
+        return Result.success(userService
+                .getUserInfo(BaseContext.getCurrentId()));
     }
 
     /**
@@ -98,8 +97,6 @@ public class UserController {
     @Operation(summary = "修改用户密码", description = "修改当前登录用户的密码")
     @PutMapping("/password")
     public Result<Void> updatePassword(@RequestBody UpdatePasswordDTO updatePasswordDTO) {
-        // 从线程变量中获取当前登录用户的ID
-        updatePasswordDTO.setUserId(BaseContext.getCurrentId());
         userService.updatePassword(updatePasswordDTO);
         return Result.success();
     }
