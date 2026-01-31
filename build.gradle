@@ -35,6 +35,7 @@ dependencies {
     implementation("com.baomidou:mybatis-plus-jsqlparser")
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.security:spring-security-crypto'
+    implementation 'org.springframework.boot:spring-boot-starter-aspectj'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
