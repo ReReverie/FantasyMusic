@@ -9,7 +9,9 @@ import com.fantasy.fm.domain.entity.User;
 import com.fantasy.fm.domain.vo.UserInfoVO;
 import com.fantasy.fm.mapper.UserMapper;
 import com.fantasy.fm.service.UserService;
-import com.fantasy.fm.utils.PasswordUtil;
+import com.fantasy.fm.utils.security.PasswordUtil;
+import com.fantasy.fm.utils.security.RSADecryptor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -18,13 +20,17 @@ import java.time.LocalDateTime;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+
+    private final RSADecryptor rsaDecryptor;
 
     @Override
     public User login(UserLoginDTO userLoginDTO) {
         String username = userLoginDTO.getUsername();
-        String password = userLoginDTO.getPassword();
+        String password = getDecryptPassword(userLoginDTO.getPassword());
 
+        //根据用户名查询用户信息
         User user = this.lambdaQuery()
                 .eq(User::getUsername, username)
                 .one();
@@ -46,7 +52,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public void register(UserLoginDTO userLoginDTO) {
         String username = userLoginDTO.getUsername();
-        String password = userLoginDTO.getPassword();
+        String password = getDecryptPassword(userLoginDTO.getPassword());
 
         //对用户名的合法性进行校验:不少于 3 位，不能是纯数字
         if (!username.matches(LoginConstant.USERNAME_REGEX)) {
@@ -78,6 +84,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUpdateTime(LocalDateTime.now());
         //保存用户信息到数据库
         this.save(user);
+    }
+
+    /**
+     * 获取解密后的密码
+     *
+     * @param rsaPassword RSA加密的密码
+     * @return 解密后的密码
+     */
+    private String getDecryptPassword(String rsaPassword) {
+        //解密密码
+        String password;
+        try {
+            password = rsaDecryptor.decrypt(rsaPassword);
+        } catch (Exception e) {
+            log.error("登录异常，密码解密失败：", e);
+            throw new LoginException(LoginConstant.LOGIN_EXCEPTION);
+        }
+        return password;
     }
 
     @Override

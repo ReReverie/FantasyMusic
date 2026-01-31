@@ -32,3 +32,5 @@ fm:
     secret-key: ${fm.jwt.secret-key}
     expire-time: ${fm.jwt.expire-time}
     token-name: ${fm.jwt.token-name}
+  login:
+    private-key-string: ${fm.login.private-key-string}

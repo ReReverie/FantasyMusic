@@ -1,4 +1,4 @@
-package com.fantasy.fm.utils;
+package com.fantasy.fm.utils.security;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 

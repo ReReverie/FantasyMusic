@@ -15,4 +15,5 @@ public class LoginConstant {
     public static final String NEW_PASSWORD_OLD_SAME = "新密码不能与旧密码相同!";
     public static final String ERROR_PASSWORD = "密码错误!";
     public static final String LOGOUT_SUCCESS = "退出登录成功!";
+    public static final String LOGIN_EXCEPTION = "登录遇到问题,请稍后再试!";
 }
