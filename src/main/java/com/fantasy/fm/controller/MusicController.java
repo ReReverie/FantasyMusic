@@ -1,5 +1,7 @@
 package com.fantasy.fm.controller;
 
+import com.fantasy.fm.annotation.AutoPermissionCheck;
+import com.fantasy.fm.enums.OperationPermission;
 import com.fantasy.fm.response.Result;
 import com.fantasy.fm.service.MusicService;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +36,7 @@ public class MusicController {
      *
      * @param musicId 音乐ID
      */
+    @AutoPermissionCheck(OperationPermission.DOWNLOAD)
     @GetMapping("/download/{id}")
     public ResponseEntity<Resource> downloadMusic(@PathVariable("id") Long musicId) {
         log.info("Downloading music. ID: {}", musicId);
@@ -45,6 +48,7 @@ public class MusicController {
      *
      * @param musicId 音乐ID
      */
+    @AutoPermissionCheck(OperationPermission.MUSIC_DELETE)
     @DeleteMapping("/{id}")
     public Result<Void> deleteMusic(@PathVariable("id") Long musicId) {
         log.info("Deleting music. ID: {}", musicId);
@@ -56,6 +60,7 @@ public class MusicController {
     /**
      * 批量删除音乐
      */
+    @AutoPermissionCheck(OperationPermission.MUSIC_DELETE)
     @DeleteMapping()
     public Result<Void> deleteMusicBatch(@RequestParam List<Long> ids) {
         log.info("批量删除音乐: ids={}", ids);

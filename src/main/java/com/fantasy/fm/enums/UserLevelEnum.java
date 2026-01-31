@@ -46,4 +46,37 @@ public enum UserLevelEnum {
         UserLevelEnum levelEnum = getByCode(code);
         return levelEnum != null ? levelEnum.getDescription() : null;
     }
+
+    /**
+     * 判断枚举是否存在
+     */
+    public static Boolean hasLevel(UserLevelEnum userLevelEnum) {
+        for (UserLevelEnum value : values()) {
+            if (value == userLevelEnum) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * 判断用户等级是否达到达到管理员级别
+     */
+    public static Boolean isAdmin(UserLevelEnum userLevelEnum) {
+        return userLevelEnum == ADMIN;
+    }
+
+    /**
+     * 判断用户等级是否达到SVIP及以上级别
+     */
+    public static Boolean isSvipOrAbove(UserLevelEnum userLevelEnum) {
+        return userLevelEnum.levelCode >= SVIP.levelCode;
+    }
+
+    /**
+     * 判断用户等级是否达到VIP及以上级别
+     */
+    public static Boolean isVipOrAbove(UserLevelEnum userLevelEnum) {
+        return userLevelEnum.levelCode >= VIP.levelCode;
+    }
 }
