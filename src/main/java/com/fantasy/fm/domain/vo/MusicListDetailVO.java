@@ -1,5 +1,6 @@
 package com.fantasy.fm.domain.vo;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -8,6 +9,8 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true) // 继承时包含父类字段
+@Schema(description = "音乐歌单详细信息视图对象")
 public class MusicListDetailVO extends MusicListVO {
+    @Schema(description = "用户ID", example = "1")
     private Long userId;
 }

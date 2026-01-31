@@ -5,6 +5,8 @@ import com.fantasy.fm.enums.AudioFormatEnum;
 import com.fantasy.fm.response.Result;
 import com.fantasy.fm.service.MusicService;
 import com.fantasy.fm.service.MusicManagerService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +24,7 @@ import java.io.File;
 @RestController
 @RequestMapping("/music/upload")
 @RequiredArgsConstructor
+@Tag(name = "音乐文件上传", description = "音乐文件上传接口")
 public class UploadController {
 
     private final MusicService musicService;
@@ -33,6 +36,7 @@ public class UploadController {
      * @param multipartFile 上传的音乐文件
      * @param fileHash      前端计算的文件哈希值
      */
+    @Operation(summary = "上传音乐文件", description = "上传音乐文件并保存相关信息")
     @PostMapping
     public Result<Void> uploadMusic(@RequestParam("file") MultipartFile multipartFile,
                                     @RequestParam("hash") String fileHash) {

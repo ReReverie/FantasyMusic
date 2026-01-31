@@ -9,6 +9,8 @@ import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
 import com.fantasy.fm.response.Result;
 import com.fantasy.fm.service.MusicListService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/musiclist")
 @RequiredArgsConstructor
+@Tag(name = "歌单管理", description = "歌单的创建、查询、删除等接口")
 public class MusicListController {
 
     private final MusicListService musicListService;
@@ -26,6 +29,7 @@ public class MusicListController {
     /**
      * 创建歌单
      */
+    @Operation(summary = "创建歌单", description = "创建新的音乐歌单")
     @PostMapping("/create")
     public Result<Void> createMusicList(@RequestBody CreateMusicListDTO createMusicListDTO) {
         log.info("Creating music list: {}", createMusicListDTO);
@@ -36,6 +40,7 @@ public class MusicListController {
     /**
      * 添加音乐到歌单
      */
+    @Operation(summary = "添加音乐到歌单", description = "将指定音乐添加到指定歌单中")
     @PostMapping("/addMusic")
     public Result<Void> addMusicToList(@RequestBody OperaMusicListDTO dto) {
         dto.setUserId(BaseContext.getCurrentId());
@@ -47,6 +52,7 @@ public class MusicListController {
     /**
      * 获取歌单列表
      */
+    @Operation(summary = "获取歌单列表", description = "获取当前用户的所有歌单列表")
     @GetMapping("/list")
     public Result<List<MusicListVO>> getMusicLists() {
         Long userId = BaseContext.getCurrentId();
@@ -57,6 +63,7 @@ public class MusicListController {
     /**
      * 分页获取歌单列表
      */
+    @Operation(summary = "分页获取歌单列表", description = "根据分页参数获取当前用户的歌单列表")
     @GetMapping("/page")
     public Result<PageDTO<MusicListVO>> getMusicListPage(MusicListPageQuery query) {
         query.setUserId(BaseContext.getCurrentId());
@@ -67,6 +74,7 @@ public class MusicListController {
     /**
      * 获取歌单详情
      */
+    @Operation(summary = "获取歌单详情", description = "根据歌单ID获取歌单的详细信息")
     @GetMapping("/{id}")
     public Result<MusicListDetailVO> getMusicListDetail(@PathVariable Long id) {
         log.info("Fetching details for music list {}", id);
@@ -76,6 +84,7 @@ public class MusicListController {
     /**
      * 删除歌单中的音乐
      */
+    @Operation(summary = "删除歌单中的音乐", description = "将指定音乐从指定歌单中移除")
     @DeleteMapping("/removeMusic")
     public Result<Void> removeMusicFromList(@RequestBody OperaMusicListDTO dto) {
         dto.setUserId(BaseContext.getCurrentId());
@@ -87,6 +96,7 @@ public class MusicListController {
     /**
      * 删除歌单
      */
+    @Operation(summary = "删除歌单", description = "根据歌单ID删除指定歌单")
     @DeleteMapping("/{id}")
     public Result<Void> deleteMusicList(@PathVariable Long id) {
         Long userId = BaseContext.getCurrentId();

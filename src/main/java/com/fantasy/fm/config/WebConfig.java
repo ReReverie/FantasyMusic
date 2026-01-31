@@ -25,7 +25,15 @@ public class WebConfig implements WebMvcConfigurer {
         log.info("开始注册登录拦截器...");
         registry.addInterceptor(loginInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/user/login", "/user/register");
+                .excludePathPatterns(
+                        "/user/login",
+                        "/user/register",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs",
+                        "/v3/api-docs/**",
+                        "/swagger-resources/**"
+                );
     }
 
     /**

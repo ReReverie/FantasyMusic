@@ -27,6 +27,14 @@ logging:
     com.fantasy: debug
   console:
     enabled: true
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha          # 标签按字母排序（支持中文拼音）
+    operations-sorter: alpha    # 接口按字母排序
 fm:
   jwt:
     secret-key: ${fm.jwt.secret-key}

@@ -2,6 +2,7 @@ package com.fantasy.fm.domain.dto;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -14,9 +15,13 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "分页结果DTO")
 public class PageDTO<T> {
+    @Schema(description = "总记录数", example = "100")
     private Long total; // 总记录数
+    @Schema(description = "总页数", example = "10")
     private Long pages; // 总页数
+    @Schema(description = "当前页数据列表")
     private List<T> list; // 当前页数据列表
 
     /**
