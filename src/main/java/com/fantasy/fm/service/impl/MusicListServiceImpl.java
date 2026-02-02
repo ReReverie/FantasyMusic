@@ -3,6 +3,7 @@ package com.fantasy.fm.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fantasy.fm.constant.MusicListConstant;
 import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
@@ -44,7 +45,7 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
         musicListMapper.insert(MusicList.builder()
                 .userId(userId)
                 .title(createMusicListDTO.getTitle())
-                .description(createMusicListDTO.getDescription())
+                .description(createMusicListDTO.getDescription() != null ? createMusicListDTO.getDescription() : MusicListConstant.NOT_FILLED_MUSIC_LIST_DESC)
                 .createTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now()).build());
     }
