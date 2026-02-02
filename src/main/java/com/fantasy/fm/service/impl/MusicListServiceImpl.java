@@ -156,11 +156,14 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
         //根据musicListTracks获取对应的MusicID获取音乐列表
         //先获取所有的MusicID
         List<Long> musicIds = musicListTracks.stream().map(MusicListTrack::getMusicId).toList();
+        //如果musicIds为空,直接返回空列表
+        if (musicIds.isEmpty()) {
+            return List.of();
+        }
         //根据MusicID列表查询对应的音乐封装到List<Music>中,最后返回
         return musicMapper.selectList(
                 new LambdaQueryWrapper<Music>()
-                        .in(Music::getId, musicIds)
-        );
+                        .in(Music::getId, musicIds));
     }
 
     /**
