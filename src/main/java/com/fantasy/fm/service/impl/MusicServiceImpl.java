@@ -145,8 +145,12 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     public PageDTO<MusicVO> queryMusicPage(MusicPageQuery query) {
         // 构建分页查询对象
         Page<Music> page = Page.of(query.getPageNum(), query.getPageSize());
+        //构建查询条件
+        LambdaQueryWrapper<Music> like = new LambdaQueryWrapper<Music>()
+                .like(Music::getTitle, query.getTitle())
+                .like(Music::getArtist, query.getArtist());
         // 执行分页查询
-        page = musicMapper.selectPage(page, null);
+        page = musicMapper.selectPage(page, like);
         // 将分页结果转换为 PageDTO<MusicVO>并返回
         return PageDTO.of(page, MusicVO.class);
     }

@@ -45,7 +45,7 @@ public class MusicInfoController {
     }
 
     /**
-     * 分页查询音乐
+     * 分页查询音乐或根据条件查询音乐
      */
     @Operation(summary = "分页查询音乐", description = "根据分页参数查询音乐列表")
     @GetMapping("/page")
