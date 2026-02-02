@@ -10,6 +10,7 @@ import com.fantasy.fm.domain.dto.PageDTO;
 import com.fantasy.fm.domain.entity.Music;
 import com.fantasy.fm.domain.entity.MusicList;
 import com.fantasy.fm.domain.entity.MusicListTrack;
+import com.fantasy.fm.domain.query.MusicListDetailQuery;
 import com.fantasy.fm.domain.query.MusicListPageQuery;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
@@ -124,16 +125,21 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     }
 
     @Override
-    public MusicListDetailVO getDetailById(Long id) {
-        MusicList musicList = musicListMapper.selectById(id);
+    public MusicListDetailVO getDetailByIdOrQuery(MusicListDetailQuery query) {
+        //根据歌单ID和当前用户ID查询对应的歌单
+        MusicList musicList = musicListMapper.selectOne(
+                new LambdaQueryWrapper<MusicList>()
+                        .eq(MusicList::getId, query.getMusicListId())
+                        .eq(MusicList::getUserId, query.getUserId())
+        );
         //健壮性检查,如果musicList为空,表示没有找到对应的歌单
         if (musicList == null) {
-            log.error("找不到对应的歌单：id={}", id);
+            log.error("找不到对应的歌单：id={}", query.getMusicListId());
             return null;
         }
         MusicListDetailVO vo = new MusicListDetailVO();
         BeanUtils.copyProperties(musicList, vo);
-        List<Music> musicLists = getMusicList(id);
+        List<Music> musicLists = getMusicList(query);
         vo.setMusics(musicLists);
         return vo;
     }
@@ -147,9 +153,39 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
                         .orderBy(true, true, MusicListTrack::getCreateTime) // 按创建时间升序
                         .eq(MusicListTrack::getMusicListId, id));
         //根据musicListTracks获取对应的MusicID获取音乐列表
-        return musicListTracks.stream()
-                .map(musicListTrack -> musicMapper.selectById(musicListTrack.getMusicId()))
-                .toList();
+        //先获取所有的MusicID
+        List<Long> musicIds = musicListTracks.stream().map(MusicListTrack::getMusicId).toList();
+        //根据MusicID列表查询对应的音乐封装到List<Music>中,最后返回
+        return musicMapper.selectList(
+                new LambdaQueryWrapper<Music>()
+                        .in(Music::getId, musicIds)
+        );
     }
 
+    /**
+     * 重载方法: 根据查询条件获取对应的音乐列表
+     */
+    private @NonNull List<Music> getMusicList(MusicListDetailQuery query) {
+        List<MusicListTrack> musicListTracks = musicListTrackMapper.selectList(
+                new LambdaQueryWrapper<MusicListTrack>()
+                        .orderBy(true, true, MusicListTrack::getCreateTime) // 按创建时间升序
+                        .eq(MusicListTrack::getMusicListId, query.getMusicListId()));
+        //根据musicListTracks获取对应的MusicID获取音乐列表
+        //如果musicListTracks为空,直接返回空列表
+        if (musicListTracks == null || musicListTracks.isEmpty()) {
+            return List.of();
+        }
+        //先获取所有的MusicID
+        List<Long> musicIds = musicListTracks.stream().map(MusicListTrack::getMusicId).toList();
+        //根据MusicID列表查询对应的音乐封装到List<Music>中,最后返回
+        return musicMapper.selectList(
+                new LambdaQueryWrapper<Music>()
+                        .in(Music::getId, musicIds)
+                        //一定要使用and包裹住多条件查询,否则会导致逻辑错误
+                        .and(musicWrapper -> musicWrapper
+                                .like(Music::getTitle, query.getKeyword())
+                                .or().like(Music::getArtist, query.getKeyword())
+                                .or().like(Music::getAlbum, query.getKeyword()))
+        );
+    }
 }

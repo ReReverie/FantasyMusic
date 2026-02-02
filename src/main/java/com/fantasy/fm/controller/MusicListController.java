@@ -4,6 +4,7 @@ import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.dto.PageDTO;
+import com.fantasy.fm.domain.query.MusicListDetailQuery;
 import com.fantasy.fm.domain.query.MusicListPageQuery;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
@@ -76,9 +77,13 @@ public class MusicListController {
      */
     @Operation(summary = "获取歌单详情", description = "根据歌单ID获取歌单的详细信息")
     @GetMapping("/{id}")
-    public Result<MusicListDetailVO> getMusicListDetail(@PathVariable Long id) {
-        log.info("Fetching details for music list {}", id);
-        return Result.success(musicListService.getDetailById(id));
+    public Result<MusicListDetailVO> getMusicListDetail(
+            @PathVariable Long id,
+            MusicListDetailQuery query) {
+        log.info("Fetching details for music list {}, queryConditions {}", id, query);
+        query.setMusicListId(id);
+        query.setUserId(BaseContext.getCurrentId());
+        return Result.success(musicListService.getDetailByIdOrQuery(query));
     }
 
     /**
