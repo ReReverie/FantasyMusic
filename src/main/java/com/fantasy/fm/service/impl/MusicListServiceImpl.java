@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.MusicListConstant;
 import com.fantasy.fm.constant.RedisCacheConstant;
 import com.fantasy.fm.context.BaseContext;
+import com.fantasy.fm.domain.dto.BatchOperaMusicListDTO;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.dto.UpdateMusicListDTO;
@@ -32,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -59,7 +61,7 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     @Transactional(rollbackFor = Exception.class)
     @Caching(evict = {
             @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, key = "#dto.userId"),
-            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#dto.musicListId")
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#dto.userId + ':' + #dto.musicListId")
     })
     public void addMusicToList(OperaMusicListDTO dto) {
         MusicList musicList = musicListMapper.selectById(dto.getMusicListId());
@@ -127,13 +129,12 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     @Transactional(rollbackFor = Exception.class)
     @Caching(evict = {
             @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, key = "#dto.userId"),
-            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#dto.musicListId")
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#dto.userId + ':' + #dto.musicListId")
     })
     public void removeMusicFromList(OperaMusicListDTO dto) {
         MusicList musicList = musicListMapper.selectById(dto.getMusicListId());
         if (musicList == null || !musicList.getUserId().equals(dto.getUserId())) {
             log.error("找不到音乐列表或用户未授权：musicListId={}， userId={}", dto.getMusicListId(), dto.getUserId());
-            // throw new RuntimeException("找不到音乐列表或用户未授权");
             return;
         }
         //根据musicListId和musicId删除对应的记录
@@ -178,19 +179,48 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     }
 
     @Override
-    @Cacheable(cacheNames = "music:list:detail", key = "#query.musicListId")
+    @Caching(evict = {
+            @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, key = "#dto.userId"),
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#dto.userId + ':' + #dto.musicListId")
+    })
+    @Transactional(rollbackFor = Exception.class)
+    public void batchAddMusicToList(BatchOperaMusicListDTO dto) {
+        MusicList musicList = musicListMapper.selectOne(new LambdaQueryWrapper<MusicList>()
+                .eq(MusicList::getId, dto.getMusicListId())
+                .eq(MusicList::getUserId, dto.getUserId()));
+        // 如果musicList为空,表示没有找到对应的歌单
+        if (musicList == null) {
+            log.info("没有找到对应的歌单，无法批量添加音乐，musicListId={}， userId={}", dto.getMusicListId(), dto.getUserId());
+            throw new MusicListNotFoundException(MusicListConstant.MUSIC_LIST_NOT_FOUND);
+        }
+        //先将对应的音乐ID封装成MusicListTrack列表
+        List<MusicListTrack> trackList = new ArrayList<>();
+        for (Long musicId : dto.getMusicIds()) {
+            trackList.add(MusicListTrack.builder()
+                    .musicId(musicId)
+                    .musicListId(dto.getMusicListId())
+                    .createTime(LocalDateTime.now())
+                    .build());
+        }
+        //最后批量插入
+        musicListTrackMapper.insert(trackList);
+    }
+
+    @Override
+    @Cacheable(cacheNames = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#query.userId + ':' + #query.musicListId")
     public MusicListDetailVO getDetailById(MusicListDetailQuery query) {
         //根据歌单ID和当前用户ID查询对应的歌单
         MusicList musicList = getUserMusicList(query);
         //健壮性检查,如果musicList为空,表示没有找到对应的歌单
         if (musicList == null) {
             log.error("找不到对应的歌单：id={}", query.getMusicListId());
-            return null;
+            throw new MusicListNotFoundException(MusicListConstant.MUSIC_LIST_NOT_FOUND);
         }
         MusicListDetailVO vo = new MusicListDetailVO();
         BeanUtils.copyProperties(musicList, vo);
         List<Music> musicLists = getMusicList(query.getMusicListId());
         vo.setMusics(musicLists);
+        vo.setMusicCount((long) musicLists.size());
         return vo;
     }
 

@@ -1,6 +1,7 @@
 package com.fantasy.fm.controller;
 
 import com.fantasy.fm.context.BaseContext;
+import com.fantasy.fm.domain.dto.BatchOperaMusicListDTO;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.dto.UpdateMusicListDTO;
@@ -47,6 +48,18 @@ public class MusicListController {
         dto.setUserId(BaseContext.getCurrentId());
         log.info("User {} Adding music {} to music list {}", dto.getUserId(), dto.getMusicListId(), dto.getMusicId());
         musicListService.addMusicToList(dto);
+        return Result.success();
+    }
+
+    /**
+     * 批量添加音乐到歌单
+     */
+    @Operation(summary = "批量添加音乐到歌单", description = "将多首音乐添加到指定歌单中")
+    @PostMapping("/batchAddMusic")
+    public Result<Void> batchAddMusicToList(@RequestBody BatchOperaMusicListDTO dto) {
+        dto.setUserId(BaseContext.getCurrentId());
+        log.info("Batch adding music to music lists: {}", dto);
+        musicListService.batchAddMusicToList(dto);
         return Result.success();
     }
 

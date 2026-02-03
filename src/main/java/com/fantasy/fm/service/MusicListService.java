@@ -1,6 +1,7 @@
 package com.fantasy.fm.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fantasy.fm.domain.dto.BatchOperaMusicListDTO;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.dto.UpdateMusicListDTO;
@@ -51,4 +52,9 @@ public interface MusicListService extends IService<MusicList> {
      * 更新歌单信息
      */
     void updateMusicList(UpdateMusicListDTO updateDTO);
+
+    /**
+     * 批量添加音乐到歌单
+     */
+    void batchAddMusicToList(BatchOperaMusicListDTO dto);
 }
