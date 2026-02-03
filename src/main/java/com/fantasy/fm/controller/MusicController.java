@@ -62,7 +62,6 @@ public class MusicController {
         return Result.success();
     }
 
-
     /**
      * 批量删除音乐
      */

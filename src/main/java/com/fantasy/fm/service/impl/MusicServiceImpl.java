@@ -1,5 +1,6 @@
 package com.fantasy.fm.service.impl;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -123,7 +124,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         byte[] data = artwork.getBinaryData();
         File coverFile = new File(coverDir, musicFileName);
         //保存封面图片到本地
-        try(FileOutputStream fos = new FileOutputStream(coverFile)){
+        try (FileOutputStream fos = new FileOutputStream(coverFile)) {
             fos.write(data);
         } catch (IOException e) {
             log.error("封面图片保存失败: {}", e.getMessage());
@@ -185,15 +186,31 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     })
     public void deleteByMusicId(Long musicId) {
         log.info("Deleting music. ID: {}", musicId);
+        // 删除封面图片文件
+        deleteFile(musicMapper.selectById(musicId).getCoverUrl());
         // 删除音乐基本信息
         musicMapper.deleteById(musicId);
-        // 使用LambdaQueryWrapper删除音乐文件信息,根据musicId字段
-        musicManagerMapper.delete(
-                new LambdaQueryWrapper<MusicFileInfo>()
-                        .eq(MusicFileInfo::getMusicId, musicId));
+        // 使用LambdaQueryWrapper获取音乐文件信息,根据musicId字段
+        LambdaQueryWrapper<MusicFileInfo> wrapper = new LambdaQueryWrapper<MusicFileInfo>()
+                .eq(MusicFileInfo::getMusicId, musicId);
+        MusicFileInfo musicFileInfo = musicManagerMapper.selectOne(wrapper);
+        // 删除音乐文件及其对应记录
+        deleteFile(musicFileInfo.getFilePath());
+        musicManagerMapper.delete(wrapper);
         //同时删除对应的MusicListTrack记录
         musicListTrackMapper.delete(new LambdaQueryWrapper<MusicListTrack>()
                 .eq(MusicListTrack::getMusicId, musicId));
+    }
+
+    private void deleteFile(String fileUrl) {
+        File file = new File(fileUrl);
+        if (file.exists()) {
+            if (file.delete()) {
+                log.info("Deleted file: {}", file.getAbsolutePath());
+            } else {
+                log.warn("Failed to delete file: {}", file.getAbsolutePath());
+            }
+        }
     }
 
     @Override
@@ -230,11 +247,26 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, allEntries = true)
     })
     public void batchDeleteMusicByIds(List<Long> ids) {
+        if (CollUtil.isEmpty(ids)) {
+            return;
+        }
+        LambdaQueryWrapper<Music> musicWrapper = new LambdaQueryWrapper<Music>().in(Music::getId, ids);
+        //删除封面图片文件
+        List<Music> musicList = musicMapper.selectList(musicWrapper);
+        for (Music music : musicList) {
+            deleteFile(music.getCoverUrl());
+        }
         //删除音乐信息
-        musicMapper.deleteByIds(ids);
+        musicMapper.delete(musicWrapper);
         //删除音乐文件信息
-        musicManagerMapper.delete(new LambdaQueryWrapper<MusicFileInfo>()
-                .in(MusicFileInfo::getMusicId, ids));
+        LambdaQueryWrapper<MusicFileInfo> wrapper = new LambdaQueryWrapper<MusicFileInfo>()
+                .in(MusicFileInfo::getMusicId, ids);
+        List<MusicFileInfo> fileInfos = musicManagerMapper.selectList(wrapper);
+        //删除对应的音乐文件
+        for (MusicFileInfo fileInfo : fileInfos) {
+            deleteFile(fileInfo.getFilePath());
+        }
+        musicManagerMapper.delete(wrapper);
         //删除对应的MusicListTrack记录
         musicListTrackMapper.delete(new LambdaQueryWrapper<MusicListTrack>()
                 .in(MusicListTrack::getMusicId, ids));
