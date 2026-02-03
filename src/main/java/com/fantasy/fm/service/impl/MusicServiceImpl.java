@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.MusicConstant;
+import com.fantasy.fm.constant.RedisCacheConstant;
 import com.fantasy.fm.domain.dto.PageDTO;
 import com.fantasy.fm.domain.entity.MusicListTrack;
 import com.fantasy.fm.domain.query.MusicPageQuery;
@@ -15,6 +16,7 @@ import com.fantasy.fm.mapper.MusicManagerMapper;
 import com.fantasy.fm.domain.entity.Music;
 import com.fantasy.fm.domain.entity.MusicFileInfo;
 import com.fantasy.fm.service.MusicService;
+import com.fantasy.fm.utils.RedisCacheUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jaudiotagger.audio.AudioFile;
@@ -32,6 +34,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.File;
 import java.net.URLEncoder;
@@ -47,14 +50,15 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     private final MusicMapper musicMapper;
     private final MusicManagerMapper musicManagerMapper;
     private final MusicListTrackMapper musicListTrackMapper;
+    private final RedisCacheUtil redisCacheUtil;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Caching(evict = {
-            @CacheEvict(cacheNames = "music:info:cache", key = "'musicList'"),
-            @CacheEvict(cacheNames = "music:info:page", allEntries = true),
-            @CacheEvict(value = "user:music:list", allEntries = true),
-            @CacheEvict(value = "music:list:detail", allEntries = true)
+            @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_CACHE, key = RedisCacheConstant.KEY_MUSIC_LIST),
+            @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_PAGE, allEntries = true),
+            @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, allEntries = true),
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, allEntries = true)
     })
     public void saveFileInfo(File musicFile, String fileHash) {
         //获取音乐元数据信息
@@ -139,10 +143,10 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Caching(evict = {
-            @CacheEvict(cacheNames = "music:info:cache", key = "'musicList'"),
-            @CacheEvict(cacheNames = "music:info:page", allEntries = true),
-            @CacheEvict(value = "user:music:list", allEntries = true),
-            @CacheEvict(value = "music:list:detail", allEntries = true)
+            @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_CACHE, key = RedisCacheConstant.KEY_MUSIC_LIST),
+            @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_PAGE, allEntries = true),
+            @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, allEntries = true),
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, allEntries = true)
     })
     public void deleteByMusicId(Long musicId) {
         log.info("Deleting music. ID: {}", musicId);
@@ -158,7 +162,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     }
 
     @Override
-    @Cacheable(cacheNames = "music:info:page", key = "'pageNum:' + #query.pageNum + ':pageSize:' + #query.pageSize")
+    @Cacheable(cacheNames = RedisCacheConstant.MUSIC_INFO_PAGE, key = "'pageNum:' + #query.pageNum + ':pageSize:' + #query.pageSize")
     public PageDTO<MusicVO> queryMusicPage(MusicPageQuery query) {
         // 构建分页查询对象
         Page<Music> page = Page.of(query.getPageNum(), query.getPageSize());
@@ -185,10 +189,10 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Caching(evict = {
-            @CacheEvict(cacheNames = "music:info:cache", key = "'musicList'"),
-            @CacheEvict(cacheNames = "music:info:page", allEntries = true),
-            @CacheEvict(value = "user:music:list", allEntries = true),
-            @CacheEvict(value = "music:list:detail", allEntries = true)
+            @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_CACHE, key = RedisCacheConstant.KEY_MUSIC_LIST),
+            @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_PAGE, allEntries = true),
+            @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, allEntries = true),
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, allEntries = true)
     })
     public void batchDeleteMusicByIds(List<Long> ids) {
         //删除音乐信息
@@ -202,16 +206,33 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     }
 
     @Override
-    @Cacheable(cacheNames = "music:info:cache", key = "'musicList'")
     public List<MusicVO> getMusicInfo() {
+        //构建redis缓存key
+        String redisKey = RedisCacheConstant.MUSIC_INFO_CACHE + "::" + RedisCacheConstant.KEY_MUSIC_LIST;
+        //尝试从缓存中获取音乐列表
+        List<MusicVO> musicVOS = redisCacheUtil.get(redisKey, new TypeReference<List<MusicVO>>() {
+        });
+        // 缓存中有则直接返回
+        if (musicVOS != null) {
+            log.info("从缓存中获取音乐列表，数量：{}", musicVOS.size());
+            return musicVOS;
+        }
+
+        //缓存中没有则从数据库获取音乐列表
         List<Music> list = this.list();
         if (list == null || list.isEmpty()) {
             return List.of();
         }
-        return list.stream().map(music -> {
+
+        List<MusicVO> listVO = list.stream().map(music -> {
             MusicVO vo = new MusicVO();
             BeanUtils.copyProperties(music, vo);
             return vo;
         }).toList();
+
+        //将音乐列表存入缓存
+        redisCacheUtil.set(redisKey, listVO);
+
+        return listVO;
     }
 }

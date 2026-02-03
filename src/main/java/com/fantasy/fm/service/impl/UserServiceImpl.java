@@ -1,6 +1,7 @@
 package com.fantasy.fm.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fantasy.fm.constant.RedisCacheConstant;
 import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.exception.*;
 import com.fantasy.fm.constant.LoginConstant;
@@ -109,7 +110,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    @Cacheable(cacheNames = "user:info:data", key = "#userId")
+    @Cacheable(cacheNames = RedisCacheConstant.USER_INFO_DATA, key = "#userId")
     public UserInfoVO getUserInfo(Long userId) {
         log.info("获取用户信息，用户ID：{}", userId);
         UserInfoVO userInfoVO = new UserInfoVO();
@@ -118,7 +119,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    @CacheEvict(cacheNames = "user:info:data", key = "#userInfoVO.id")
+    @CacheEvict(cacheNames = RedisCacheConstant.USER_INFO_DATA, key = "#userInfoVO.id")
     public void updateUserInfo(UserInfoVO userInfoVO) {
         log.info("更新用户信息：{}", userInfoVO);
         User user = new User();

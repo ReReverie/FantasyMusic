@@ -3,6 +3,7 @@ package com.fantasy.fm.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.MusicListConstant;
+import com.fantasy.fm.constant.RedisCacheConstant;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.entity.Music;
@@ -41,7 +42,7 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     private final RedisCacheUtil redisCacheUtil;
 
     @Override
-    @CacheEvict(value = "user:music:list", key = "#createMusicListDTO.userId")
+    @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, key = "#createMusicListDTO.userId")
     public void createMusicList(CreateMusicListDTO createMusicListDTO) {
         musicListMapper.insert(MusicList.builder()
                 .userId(createMusicListDTO.getUserId())
@@ -54,8 +55,8 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Caching(evict = {
-            @CacheEvict(value = "user:music:list", key = "#dto.userId"),
-            @CacheEvict(value = "music:list:detail", key = "#dto.musicListId")
+            @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, key = "#dto.userId"),
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#dto.musicListId")
     })
     public void addMusicToList(OperaMusicListDTO dto) {
         MusicList musicList = musicListMapper.selectById(dto.getMusicListId());
@@ -84,7 +85,7 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
             return List.of();
         }
         //构造redis的key
-        String redisKey = "user:music:list::" + userId;
+        String redisKey = RedisCacheConstant.USER_MUSIC_LIST + "::" + userId;
         //从redis中获取数据
         List<MusicListVO> listVOS = redisCacheUtil
                 .get(redisKey, new TypeReference<List<MusicListVO>>() {
@@ -122,8 +123,8 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     @Override
     @Transactional(rollbackFor = Exception.class)
     @Caching(evict = {
-            @CacheEvict(value = "user:music:list", key = "#dto.userId"),
-            @CacheEvict(value = "music:list:detail", key = "#dto.musicListId")
+            @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, key = "#dto.userId"),
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#dto.musicListId")
     })
     public void removeMusicFromList(OperaMusicListDTO dto) {
         MusicList musicList = musicListMapper.selectById(dto.getMusicListId());
@@ -143,8 +144,8 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
 
     @Override
     @Caching(evict = {
-            @CacheEvict(value = "user:music:list", key = "#userId"),
-            @CacheEvict(value = "music:list:detail", key = "#id")
+            @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, key = "#userId"),
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#id")
     })
     public void deleteMusicList(Long userId, Long id) {
         this.removeById(id);
