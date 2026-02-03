@@ -1,7 +1,9 @@
 package com.fantasy.fm.controller;
 
+import com.fantasy.fm.annotation.AutoPermissionCheck;
 import com.fantasy.fm.constant.MusicConstant;
 import com.fantasy.fm.enums.AudioFormatEnum;
+import com.fantasy.fm.enums.OperationPermission;
 import com.fantasy.fm.response.Result;
 import com.fantasy.fm.service.MusicService;
 import com.fantasy.fm.service.MusicManagerService;
@@ -36,6 +38,7 @@ public class UploadController {
      * @param multipartFile 上传的音乐文件
      * @param fileHash      前端计算的文件哈希值
      */
+    @AutoPermissionCheck(OperationPermission.MUSIC_UPLOAD)
     @Operation(summary = "上传音乐文件", description = "上传音乐文件并保存相关信息")
     @PostMapping
     public Result<Void> uploadMusic(@RequestParam("file") MultipartFile multipartFile,

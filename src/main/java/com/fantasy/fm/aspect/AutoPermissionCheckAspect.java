@@ -58,7 +58,7 @@ public class AutoPermissionCheckAspect {
     private Boolean hasPermission(OperationPermission operationPermission, UserLevelEnum levelEnum) {
         return switch (operationPermission) {
             case DOWNLOAD -> UserLevelEnum.isVipOrAbove(levelEnum);
-            case MUSIC_DELETE -> UserLevelEnum.isAdmin(levelEnum);
+            case MUSIC_DELETE, MUSIC_UPLOAD -> UserLevelEnum.isAdmin(levelEnum);
         };
     }
 }
