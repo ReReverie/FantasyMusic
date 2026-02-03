@@ -95,6 +95,7 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
         }
 
         //处理数据
+        //获取用户的歌单列表,按创建时间降序排列
         List<MusicList> list = this.lambdaQuery()
                 .orderBy(true, false, MusicList::getCreateTime) // 按创建时间降序
                 .eq(MusicList::getUserId, userId).list();
@@ -106,7 +107,11 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
         if (musicListVOS.isEmpty()) {
             return List.of();
         }
-
+        //获取歌单内对应的音乐和数量
+        for (MusicListVO musicListVO : musicListVOS) {
+            List<Music> musicLists = getMusicList(musicListVO.getId());
+            musicListVO.setMusicCount((long) musicLists.size());
+        }
         //将查询处理完后的数据存入redis对应位置
         redisCacheUtil.set(redisKey, musicListVOS);
 

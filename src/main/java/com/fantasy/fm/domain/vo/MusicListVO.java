@@ -41,8 +41,8 @@ public class MusicListVO {
     private LocalDateTime createTime;
 
     /**
-     * 歌单内的歌曲列表
+     * 歌曲数量
      */
-    @Schema(description = "歌单内的歌曲列表")
-    private List<Music> musics;
+    @Schema(description = "歌曲数量", example = "10")
+    private Long musicCount;
 }
