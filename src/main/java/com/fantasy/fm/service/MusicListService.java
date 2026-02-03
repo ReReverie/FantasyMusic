@@ -3,10 +3,8 @@ package com.fantasy.fm.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
-import com.fantasy.fm.domain.dto.PageDTO;
 import com.fantasy.fm.domain.entity.MusicList;
 import com.fantasy.fm.domain.query.MusicListDetailQuery;
-import com.fantasy.fm.domain.query.MusicListPageQuery;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
 

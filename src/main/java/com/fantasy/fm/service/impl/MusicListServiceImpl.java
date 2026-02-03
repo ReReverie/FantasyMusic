@@ -1,17 +1,14 @@
 package com.fantasy.fm.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.MusicListConstant;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
-import com.fantasy.fm.domain.dto.PageDTO;
 import com.fantasy.fm.domain.entity.Music;
 import com.fantasy.fm.domain.entity.MusicList;
 import com.fantasy.fm.domain.entity.MusicListTrack;
 import com.fantasy.fm.domain.query.MusicListDetailQuery;
-import com.fantasy.fm.domain.query.MusicListPageQuery;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
 import com.fantasy.fm.mapper.MusicListMapper;
