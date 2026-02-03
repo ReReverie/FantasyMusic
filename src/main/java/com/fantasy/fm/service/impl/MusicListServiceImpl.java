@@ -48,6 +48,7 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
 
     @Override
     @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, key = "#createMusicListDTO.userId")
+    @Transactional(rollbackFor = Exception.class)
     public void createMusicList(CreateMusicListDTO createMusicListDTO) {
         musicListMapper.insert(MusicList.builder()
                 .userId(createMusicListDTO.getUserId())
@@ -149,8 +150,9 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     @Override
     @Caching(evict = {
             @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, key = "#userId"),
-            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#id")
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#userId", allEntries = true)
     })
+    @Transactional(rollbackFor = Exception.class)
     public void deleteMusicList(Long userId, Long id) {
         this.removeById(id);
     }
@@ -158,8 +160,9 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     @Override
     @Caching(evict = {
             @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, key = "#updateDTO.userId"),
-            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#updateDTO.id")
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#updateDTO.userId", allEntries = true)
     })
+    @Transactional(rollbackFor = Exception.class)
     public void updateMusicList(UpdateMusicListDTO updateDTO) {
         //根据用户ID和歌单ID获取对应的歌单
         MusicList musicList = musicListMapper.selectOne(new LambdaQueryWrapper<MusicList>()
