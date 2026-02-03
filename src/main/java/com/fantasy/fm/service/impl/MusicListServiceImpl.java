@@ -4,14 +4,17 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.MusicListConstant;
 import com.fantasy.fm.constant.RedisCacheConstant;
+import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
+import com.fantasy.fm.domain.dto.UpdateMusicListDTO;
 import com.fantasy.fm.domain.entity.Music;
 import com.fantasy.fm.domain.entity.MusicList;
 import com.fantasy.fm.domain.entity.MusicListTrack;
 import com.fantasy.fm.domain.query.MusicListDetailQuery;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
+import com.fantasy.fm.exception.MusicListNotFoundException;
 import com.fantasy.fm.mapper.MusicListMapper;
 import com.fantasy.fm.mapper.MusicListTrackMapper;
 import com.fantasy.fm.mapper.MusicMapper;
@@ -149,6 +152,29 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     })
     public void deleteMusicList(Long userId, Long id) {
         this.removeById(id);
+    }
+
+    @Override
+    @Caching(evict = {
+            @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, key = "#updateDTO.userId"),
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#updateDTO.id")
+    })
+    public void updateMusicList(UpdateMusicListDTO updateDTO) {
+        //根据用户ID和歌单ID获取对应的歌单
+        MusicList musicList = musicListMapper.selectOne(new LambdaQueryWrapper<MusicList>()
+                .eq(MusicList::getId, updateDTO.getId())
+                .eq(MusicList::getUserId, BaseContext.getCurrentId()));
+        //如果musicList为空,表示没有找到对应的歌单
+        if (musicList == null) {
+            log.error("找不到对应的歌单：id={}， userId={}", updateDTO.getId(), BaseContext.getCurrentId());
+            throw new MusicListNotFoundException(MusicListConstant.MUSIC_LIST_NOT_FOUND);
+        }
+        //更新歌单信息
+        musicList.setTitle(updateDTO.getTitle());
+        musicList.setDescription(updateDTO.getDescription());
+        musicList.setCover(updateDTO.getCover());
+        musicList.setUpdateTime(LocalDateTime.now());
+        musicListMapper.updateById(musicList);
     }
 
     @Override

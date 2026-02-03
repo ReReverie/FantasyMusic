@@ -3,6 +3,7 @@ package com.fantasy.fm.controller;
 import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
+import com.fantasy.fm.domain.dto.UpdateMusicListDTO;
 import com.fantasy.fm.domain.query.MusicListDetailQuery;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
@@ -109,6 +110,18 @@ public class MusicListController {
         Long userId = BaseContext.getCurrentId();
         log.info("User {} Deleting music list {}", userId, id);
         musicListService.deleteMusicList(userId, id);
+        return Result.success();
+    }
+
+    /**
+     * 修改歌单信息
+     */
+    @Operation(summary = "修改歌单信息", description = "更新指定歌单的基本信息")
+    @PutMapping("/update")
+    public Result<Void> updateMusicList(@RequestBody UpdateMusicListDTO updateDTO) {
+        log.info("Updating music list: {}", updateDTO);
+        updateDTO.setUserId(BaseContext.getCurrentId());
+        musicListService.updateMusicList(updateDTO);
         return Result.success();
     }
 }
