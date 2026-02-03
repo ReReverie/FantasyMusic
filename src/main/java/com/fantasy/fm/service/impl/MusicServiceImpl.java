@@ -21,6 +21,10 @@ import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
+import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -46,6 +50,12 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "music:info:cache", key = "'musicList'"),
+            @CacheEvict(cacheNames = "music:info:page", allEntries = true),
+            @CacheEvict(value = "user:music:list", allEntries = true),
+            @CacheEvict(value = "music:list:detail", allEntries = true)
+    })
     public void saveFileInfo(File musicFile, String fileHash) {
         //获取音乐元数据信息
         AudioFile audioFile;
@@ -128,6 +138,12 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "music:info:cache", key = "'musicList'"),
+            @CacheEvict(cacheNames = "music:info:page", allEntries = true),
+            @CacheEvict(value = "user:music:list", allEntries = true),
+            @CacheEvict(value = "music:list:detail", allEntries = true)
+    })
     public void deleteByMusicId(Long musicId) {
         log.info("Deleting music. ID: {}", musicId);
         // 删除音乐基本信息
@@ -142,7 +158,18 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     }
 
     @Override
+    @Cacheable(cacheNames = "music:info:page", key = "'pageNum:' + #query.pageNum + ':pageSize:' + #query.pageSize")
     public PageDTO<MusicVO> queryMusicPage(MusicPageQuery query) {
+        // 构建分页查询对象
+        Page<Music> page = Page.of(query.getPageNum(), query.getPageSize());
+        // 执行分页查询
+        page = musicMapper.selectPage(page, null);
+        // 将分页结果转换为 PageDTO<MusicVO>并返回
+        return PageDTO.of(page, MusicVO.class);
+    }
+
+    @Override
+    public PageDTO<MusicVO> getMusicPageByCondition(MusicPageQuery query) {
         // 构建分页查询对象
         Page<Music> page = Page.of(query.getPageNum(), query.getPageSize());
         //构建查询条件
@@ -157,6 +184,12 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Caching(evict = {
+            @CacheEvict(cacheNames = "music:info:cache", key = "'musicList'"),
+            @CacheEvict(cacheNames = "music:info:page", allEntries = true),
+            @CacheEvict(value = "user:music:list", allEntries = true),
+            @CacheEvict(value = "music:list:detail", allEntries = true)
+    })
     public void batchDeleteMusicByIds(List<Long> ids) {
         //删除音乐信息
         musicMapper.deleteByIds(ids);
@@ -166,5 +199,19 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         //删除对应的MusicListTrack记录
         musicListTrackMapper.delete(new LambdaQueryWrapper<MusicListTrack>()
                 .in(MusicListTrack::getMusicId, ids));
+    }
+
+    @Override
+    @Cacheable(cacheNames = "music:info:cache", key = "'musicList'")
+    public List<MusicVO> getMusicInfo() {
+        List<Music> list = this.list();
+        if (list == null || list.isEmpty()) {
+            return List.of();
+        }
+        return list.stream().map(music -> {
+            MusicVO vo = new MusicVO();
+            BeanUtils.copyProperties(music, vo);
+            return vo;
+        }).toList();
     }
 }

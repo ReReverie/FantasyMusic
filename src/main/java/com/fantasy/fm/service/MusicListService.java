@@ -21,7 +21,12 @@ public interface MusicListService extends IService<MusicList> {
     /**
      * 获取歌单详情
      */
-    MusicListDetailVO getDetailByIdOrQuery(MusicListDetailQuery query);
+    MusicListDetailVO getDetailById(MusicListDetailQuery query);
+
+    /**
+     * 歌单详情内搜索
+     */
+    MusicListDetailVO getDetailQuery(MusicListDetailQuery query);
 
     /**
      * 添加音乐到歌单
@@ -39,7 +44,7 @@ public interface MusicListService extends IService<MusicList> {
     void removeMusicFromList(OperaMusicListDTO operaMusicListDTO);
 
     /**
-     * 分页查询歌单列表
+     * 删除歌单
      */
-    PageDTO<MusicListVO> queryMusicListPage(MusicListPageQuery query);
+    void deleteMusicList(Long userId, Long id);
 }

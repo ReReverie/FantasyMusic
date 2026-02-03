@@ -15,6 +15,8 @@ import com.fantasy.fm.utils.security.RSADecryptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -107,6 +109,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    @Cacheable(cacheNames = "user:info:data", key = "#userId")
     public UserInfoVO getUserInfo(Long userId) {
         log.info("获取用户信息，用户ID：{}", userId);
         UserInfoVO userInfoVO = new UserInfoVO();
@@ -115,6 +118,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    @CacheEvict(cacheNames = "user:info:data", key = "#userInfoVO.id")
     public void updateUserInfo(UserInfoVO userInfoVO) {
         log.info("更新用户信息：{}", userInfoVO);
         User user = new User();

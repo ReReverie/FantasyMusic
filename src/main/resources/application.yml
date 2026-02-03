@@ -6,6 +6,12 @@ spring:
     url: jdbc:mysql://${spring.datasource.mysql-connect.host}:${spring.datasource.mysql-connect.port}/fantasy_music?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
     username: ${spring.datasource.username}
     password: ${spring.datasource.password}
+  data:
+    redis:
+      host: ${spring.data.redis.host}
+      port: ${spring.data.redis.port}
+      password: ${spring.data.redis.password}
+      database: ${spring.data.redis.database}
   profiles:
     active: local
   servlet:

@@ -55,4 +55,17 @@ public interface MusicService extends IService<Music> {
      * @param ids 音乐ID列表
      */
     void batchDeleteMusicByIds(List<Long> ids);
+
+    /**
+     * 获取音乐信息列表
+     */
+    List<MusicVO> getMusicInfo();
+
+    /**
+     * 根据条件分页查询音乐
+     *
+     * @param query 查询条件
+     * @return 音乐分页结果
+     */
+    PageDTO<MusicVO> getMusicPageByCondition(MusicPageQuery query);
 }

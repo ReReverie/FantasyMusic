@@ -3,9 +3,7 @@ package com.fantasy.fm.controller;
 import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
-import com.fantasy.fm.domain.dto.PageDTO;
 import com.fantasy.fm.domain.query.MusicListDetailQuery;
-import com.fantasy.fm.domain.query.MusicListPageQuery;
 import com.fantasy.fm.domain.vo.MusicListDetailVO;
 import com.fantasy.fm.domain.vo.MusicListVO;
 import com.fantasy.fm.response.Result;
@@ -34,6 +32,7 @@ public class MusicListController {
     @PostMapping("/create")
     public Result<Void> createMusicList(@RequestBody CreateMusicListDTO createMusicListDTO) {
         log.info("Creating music list: {}", createMusicListDTO);
+        createMusicListDTO.setUserId(BaseContext.getCurrentId());
         musicListService.createMusicList(createMusicListDTO);
         return Result.success();
     }
@@ -62,17 +61,6 @@ public class MusicListController {
     }
 
     /**
-     * 分页获取歌单列表
-     */
-    @Operation(summary = "分页获取歌单列表", description = "根据分页参数获取当前用户的歌单列表")
-    @GetMapping("/page")
-    public Result<PageDTO<MusicListVO>> getMusicListPage(MusicListPageQuery query) {
-        query.setUserId(BaseContext.getCurrentId());
-        log.info("分页查询音乐列表,当前用户{}: pageNum={}, pageSize={}", query.getUserId(), query.getPageNum(), query.getPageSize());
-        return Result.success(musicListService.queryMusicListPage(query));
-    }
-
-    /**
      * 获取歌单详情
      */
     @Operation(summary = "获取歌单详情", description = "根据歌单ID获取歌单的详细信息")
@@ -83,7 +71,21 @@ public class MusicListController {
         log.info("Fetching details for music list {}, queryConditions {}", id, query);
         query.setMusicListId(id);
         query.setUserId(BaseContext.getCurrentId());
-        return Result.success(musicListService.getDetailByIdOrQuery(query));
+        return Result.success(musicListService.getDetailById(query));
+    }
+
+    /**
+     * 歌单详情内搜索
+     */
+    @Operation(summary = "歌单详情内搜索", description = "在指定歌单中搜索音乐")
+    @GetMapping("/{id}/search")
+    public Result<MusicListDetailVO> searchInMusicList(
+            @PathVariable Long id,
+            MusicListDetailQuery query) {
+        log.info("Searching in music list {}, queryConditions {}", id, query);
+        query.setMusicListId(id);
+        query.setUserId(BaseContext.getCurrentId());
+        return Result.success(musicListService.getDetailQuery(query));
     }
 
     /**
@@ -106,7 +108,7 @@ public class MusicListController {
     public Result<Void> deleteMusicList(@PathVariable Long id) {
         Long userId = BaseContext.getCurrentId();
         log.info("User {} Deleting music list {}", userId, id);
-        musicListService.removeById(id);
+        musicListService.deleteMusicList(userId, id);
         return Result.success();
     }
 }

@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.MusicListConstant;
-import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.domain.dto.CreateMusicListDTO;
 import com.fantasy.fm.domain.dto.OperaMusicListDTO;
 import com.fantasy.fm.domain.dto.PageDTO;
@@ -19,12 +18,17 @@ import com.fantasy.fm.mapper.MusicListMapper;
 import com.fantasy.fm.mapper.MusicListTrackMapper;
 import com.fantasy.fm.mapper.MusicMapper;
 import com.fantasy.fm.service.MusicListService;
+import com.fantasy.fm.utils.RedisCacheUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeanUtils;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.type.TypeReference;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -37,13 +41,13 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     private final MusicListMapper musicListMapper;
     private final MusicListTrackMapper musicListTrackMapper;
     private final MusicMapper musicMapper;
+    private final RedisCacheUtil redisCacheUtil;
 
     @Override
+    @CacheEvict(value = "user:music:list", key = "#createMusicListDTO.userId")
     public void createMusicList(CreateMusicListDTO createMusicListDTO) {
-        //获取当前用户ID
-        Long userId = BaseContext.getCurrentId();
         musicListMapper.insert(MusicList.builder()
-                .userId(userId)
+                .userId(createMusicListDTO.getUserId())
                 .title(createMusicListDTO.getTitle())
                 .description(createMusicListDTO.getDescription() != null ? createMusicListDTO.getDescription() : MusicListConstant.NOT_FILLED_MUSIC_LIST_DESC)
                 .createTime(LocalDateTime.now())
@@ -52,6 +56,10 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Caching(evict = {
+            @CacheEvict(value = "user:music:list", key = "#dto.userId"),
+            @CacheEvict(value = "music:list:detail", key = "#dto.musicListId")
+    })
     public void addMusicToList(OperaMusicListDTO dto) {
         MusicList musicList = musicListMapper.selectById(dto.getMusicListId());
         if (musicList == null || !musicList.getUserId().equals(dto.getUserId())) {
@@ -73,11 +81,23 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
 
     @Override
     public List<MusicListVO> getMusicListsByUserId(Long userId) {
-        /*//健壮性检查
+        //健壮性检查
         if (userId == null) {
-            log.error("用户ID不能为空");
+            log.error("获取歌单列表错误,用户ID不能为空");
             return List.of();
-        }*/
+        }
+        //构造redis的key
+        String redisKey = "user:music:list::" + userId;
+        //从redis中获取数据
+        List<MusicListVO> listVOS = redisCacheUtil
+                .get(redisKey, new TypeReference<List<MusicListVO>>() {
+                });
+        if (listVOS != null && !listVOS.isEmpty()) {
+            log.info("从Redis中获取了用户歌单数据, userId={}, {}", userId, listVOS);
+            return listVOS;
+        }
+
+        //处理数据
         List<MusicList> list = this.lambdaQuery()
                 .orderBy(true, false, MusicList::getCreateTime) // 按创建时间降序
                 .eq(MusicList::getUserId, userId).list();
@@ -89,15 +109,20 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
         if (musicListVOS.isEmpty()) {
             return List.of();
         }
-        for (MusicListVO musicListVO : musicListVOS) {
-            List<Music> musicLists = getMusicList(musicListVO.getId());
-            musicListVO.setMusics(musicLists);
-        }
+
+        //将查询处理完后的数据存入redis对应位置
+        redisCacheUtil.set(redisKey, musicListVOS);
+
+        //返回
         return musicListVOS;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Caching(evict = {
+            @CacheEvict(value = "user:music:list", key = "#dto.userId"),
+            @CacheEvict(value = "music:list:detail", key = "#dto.musicListId")
+    })
     public void removeMusicFromList(OperaMusicListDTO dto) {
         MusicList musicList = musicListMapper.selectById(dto.getMusicListId());
         if (musicList == null || !musicList.getUserId().equals(dto.getUserId())) {
@@ -115,24 +140,34 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     }
 
     @Override
-    public PageDTO<MusicListVO> queryMusicListPage(MusicListPageQuery query) {
-        // 构建分页查询条件
-        Page<MusicList> page = Page.of(query.getPageNum(), query.getPageSize());
-        // 根据用户ID查询歌单列表
-        page = musicListMapper.selectPage(page, new LambdaQueryWrapper<MusicList>()
-                .eq(MusicList::getUserId, query.getUserId()));
-        // 转换为PageDTO<MusicListVO>返回
-        return PageDTO.of(page, MusicListVO.class);
+    @Caching(evict = {
+            @CacheEvict(value = "user:music:list", key = "#userId"),
+            @CacheEvict(value = "music:list:detail", key = "#id")
+    })
+    public void deleteMusicList(Long userId, Long id) {
+        this.removeById(id);
     }
 
     @Override
-    public MusicListDetailVO getDetailByIdOrQuery(MusicListDetailQuery query) {
+    @Cacheable(cacheNames = "music:list:detail", key = "#query.musicListId")
+    public MusicListDetailVO getDetailById(MusicListDetailQuery query) {
         //根据歌单ID和当前用户ID查询对应的歌单
-        MusicList musicList = musicListMapper.selectOne(
-                new LambdaQueryWrapper<MusicList>()
-                        .eq(MusicList::getId, query.getMusicListId())
-                        .eq(MusicList::getUserId, query.getUserId())
-        );
+        MusicList musicList = getUserMusicList(query);
+        //健壮性检查,如果musicList为空,表示没有找到对应的歌单
+        if (musicList == null) {
+            log.error("找不到对应的歌单：id={}", query.getMusicListId());
+            return null;
+        }
+        MusicListDetailVO vo = new MusicListDetailVO();
+        BeanUtils.copyProperties(musicList, vo);
+        List<Music> musicLists = getMusicList(query.getMusicListId());
+        vo.setMusics(musicLists);
+        return vo;
+    }
+
+    @Override
+    public MusicListDetailVO getDetailQuery(MusicListDetailQuery query) {
+        MusicList musicList = getUserMusicList(query);
         //健壮性检查,如果musicList为空,表示没有找到对应的歌单
         if (musicList == null) {
             log.error("找不到对应的歌单：id={}", query.getMusicListId());
@@ -143,6 +178,18 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
         List<Music> musicLists = getMusicList(query);
         vo.setMusics(musicLists);
         return vo;
+    }
+
+    /**
+     * 根据查询条件获取对应的用户歌单
+     */
+    private MusicList getUserMusicList(MusicListDetailQuery query) {
+        //根据歌单ID和当前用户ID查询对应的歌单
+        return musicListMapper.selectOne(
+                new LambdaQueryWrapper<MusicList>()
+                        .eq(MusicList::getId, query.getMusicListId())
+                        .eq(MusicList::getUserId, query.getUserId())
+        );
     }
 
     /**
