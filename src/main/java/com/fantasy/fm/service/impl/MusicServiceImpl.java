@@ -239,6 +239,28 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     }
 
     @Override
+    public ResponseEntity<Resource> getMusicCoverById(Long id) {
+        String coverUrl = musicMapper.selectById(id).getCoverUrl();
+
+        //如果封面不存在，返回404
+        if (coverUrl == null) {
+            return ResponseEntity.notFound().build();
+        }
+        //创建资源对象
+        FileSystemResource resource = new FileSystemResource(coverUrl);
+
+        //检查资源文件是否存在
+        if (!resource.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+        //返回封面图片资源
+        return ResponseEntity.ok()
+                .contentType(coverUrl.substring(coverUrl.lastIndexOf(".") + 1)
+                        .equals("jpg") ? MediaType.IMAGE_JPEG : MediaType.IMAGE_PNG)
+                .body(resource);
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     @Caching(evict = {
             @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_CACHE, key = RedisCacheConstant.KEY_MUSIC_LIST),

@@ -7,12 +7,20 @@ import com.fantasy.fm.response.Result;
 import com.fantasy.fm.service.MusicService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.List;
 
 @Slf4j
@@ -23,6 +31,7 @@ import java.util.List;
 public class MusicInfoController {
 
     private final MusicService musicInfoService;
+    private final MusicService musicService;
 
     /**
      * 获取音乐列表
@@ -56,5 +65,14 @@ public class MusicInfoController {
         log.info("分页查询音乐列表: pageNum={}, pageSize={}, Condition= Title: {}, Artist:{}",
                 query.getPageNum(), query.getPageSize(), query.getTitle(), query.getArtist());
         return Result.success(musicInfoService.getMusicPageByCondition(query));
+    }
+
+    /**
+     * 获取音乐封面
+     */
+    @Operation(summary = "获取音乐封面", description = "根据音乐ID获取音乐封面")
+    @GetMapping("/cover/{id}")
+    public ResponseEntity<Resource> getMusicCover(@PathVariable Long id) {
+        return musicService.getMusicCoverById(id);
     }
 }

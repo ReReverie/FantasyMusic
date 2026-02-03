@@ -15,4 +15,5 @@ public class MusicVO {
     private String artist; // 歌手
     private String album; // 专辑
     private Long durationMs; // 歌曲时长(毫秒表示)
+    private String coverUrl; // 封面图片URL
 }

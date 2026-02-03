@@ -68,4 +68,12 @@ public interface MusicService extends IService<Music> {
      * @return 音乐分页结果
      */
     PageDTO<MusicVO> getMusicPageByCondition(MusicPageQuery query);
+
+    /**
+     * 根据音乐ID获取音乐封面
+     *
+     * @param id 音乐ID
+     * @return 音乐封面资源
+     */
+    ResponseEntity<Resource> getMusicCoverById(Long id);
 }
