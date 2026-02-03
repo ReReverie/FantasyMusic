@@ -23,6 +23,7 @@ import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
+import org.jaudiotagger.tag.images.Artwork;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -37,6 +38,8 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -75,6 +78,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
                     .album(StrUtil.isNotBlank(tag.getFirst(FieldKey.ALBUM)) ? tag.getFirst(FieldKey.ALBUM) : MusicConstant.UNKNOWN_ALBUM)
                     .durationMs(audioFile.getAudioHeader().getTrackLength() * 1000L)
                     .releaseYear(StrUtil.isNotBlank(tag.getFirst(FieldKey.YEAR)) ? tag.getFirst(FieldKey.YEAR) : MusicConstant.UNKNOWN_RELEASE_YEAR)
+                    .coverUrl(getCoverUrl(tag, musicFile))
                     .build();
             //保存音乐基本信息到数据库
             musicMapper.insert(musicInfo);
@@ -95,6 +99,37 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
                 .fileHash(fileHash)
                 .build();
         musicManagerMapper.insert(mfi);
+    }
+
+    /**
+     * 获取封面图片并保存到本地，返回封面图片路径
+     */
+    private String getCoverUrl(Tag tag, File musicFile) {
+        //获取音乐目录
+        Artwork artwork = tag.getFirstArtwork();
+        if (artwork == null) {
+            return null;
+        }
+        //创建cover目录
+        File coverDir = new File(musicFile.getParent(), "cover");
+        if (!coverDir.exists()) {
+            coverDir.mkdirs();
+        }
+        //构建目标文件路径
+        String musicFileName = musicFile
+                .getName()
+                .substring(0, musicFile.getName().lastIndexOf(".")) + "_Cover.jpg";
+        //读取封面图片数据
+        byte[] data = artwork.getBinaryData();
+        File coverFile = new File(coverDir, musicFileName);
+        //保存封面图片到本地
+        try(FileOutputStream fos = new FileOutputStream(coverFile)){
+            fos.write(data);
+        } catch (IOException e) {
+            log.error("封面图片保存失败: {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
+        return coverFile.getAbsolutePath();
     }
 
     @Override

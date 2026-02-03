@@ -26,4 +26,5 @@ public class Music implements Serializable {
     private String album; // 专辑
     private Long durationMs; // 歌曲时长(毫秒表示)
     private String releaseYear; // 发行年份
+    private String coverUrl; // 封面图片URL
 }
