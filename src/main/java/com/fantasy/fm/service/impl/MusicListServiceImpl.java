@@ -210,6 +210,27 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     }
 
     @Override
+    @Caching(evict = {
+            @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, key = "#dto.userId"),
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#dto.userId + ':' + #dto.musicListId")
+    })
+    @Transactional(rollbackFor = Exception.class)
+    public void batchRemoveMusicFromList(BatchOperaMusicListDTO dto) {
+        MusicList musicList = musicListMapper.selectOne(new LambdaQueryWrapper<MusicList>()
+                .eq(MusicList::getId, dto.getMusicListId())
+                .eq(MusicList::getUserId, dto.getUserId()));
+        // 如果musicList为空,表示没有找到对应的歌单
+        if (musicList == null) {
+            log.info("没有找到对应的歌单，无法批量移除音乐，musicListId={}， userId={}", dto.getMusicListId(), dto.getUserId());
+            throw new MusicListNotFoundException(MusicListConstant.MUSIC_LIST_NOT_FOUND);
+        }
+        //批量删除对应的记录
+        musicListTrackMapper.delete(new LambdaQueryWrapper<MusicListTrack>()
+                .eq(MusicListTrack::getMusicListId, dto.getMusicListId())
+                .in(MusicListTrack::getMusicId, dto.getMusicIds()));
+    }
+
+    @Override
     @Cacheable(cacheNames = RedisCacheConstant.MUSIC_LIST_DETAIL, key = "#query.userId + ':' + #query.musicListId")
     public MusicListDetailVO getDetailById(MusicListDetailQuery query) {
         //根据歌单ID和当前用户ID查询对应的歌单

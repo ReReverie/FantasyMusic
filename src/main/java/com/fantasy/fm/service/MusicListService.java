@@ -57,4 +57,9 @@ public interface MusicListService extends IService<MusicList> {
      * 批量添加音乐到歌单
      */
     void batchAddMusicToList(BatchOperaMusicListDTO dto);
+
+    /**
+     * 批量从歌单中移除音乐
+     */
+    void batchRemoveMusicFromList(BatchOperaMusicListDTO dto);
 }

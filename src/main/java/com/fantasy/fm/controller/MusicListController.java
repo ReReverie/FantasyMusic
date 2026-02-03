@@ -115,6 +115,18 @@ public class MusicListController {
     }
 
     /**
+     * 批量删除歌单中的音乐
+     */
+    @Operation(summary = "批量删除歌单中的音乐", description = "将多首音乐从指定歌单中移除")
+    @DeleteMapping("/batchRemoveMusic")
+    public Result<Void> batchRemoveMusicFromList(@RequestBody BatchOperaMusicListDTO dto) {
+        dto.setUserId(BaseContext.getCurrentId());
+        log.info("Batch removing music from music lists: {}", dto);
+        musicListService.batchRemoveMusicFromList(dto);
+        return Result.success();
+    }
+
+    /**
      * 删除歌单
      */
     @Operation(summary = "删除歌单", description = "根据歌单ID删除指定歌单")
@@ -137,4 +149,5 @@ public class MusicListController {
         musicListService.updateMusicList(updateDTO);
         return Result.success();
     }
+
 }
