@@ -49,3 +49,8 @@ fm:
   login:
     is-enable-password-encrypt: ${fm.login.is-enable-password-encrypt}
     private-key-string: ${fm.login.private-key-string}
+  aliyunoss:
+    endpoint: ${fm.aliyunoss.endpoint}
+    bucket-name: ${fm.aliyunoss.bucket-name}
+    access-key-id: ${fm.aliyunoss.access-key-id}
+    access-key-secret: ${fm.aliyunoss.access-key-secret}

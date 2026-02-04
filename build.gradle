@@ -54,6 +54,8 @@ dependencies {
     // Source: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-impl
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0'
+    // Source: https://mvnrepository.com/artifact/com.aliyun.oss/aliyun-sdk-oss
+    implementation 'com.aliyun.oss:aliyun-sdk-oss:3.18.5'
 }
 
 tasks.named('test') {
