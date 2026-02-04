@@ -39,3 +39,4 @@ out/
 /src/main/resources/application-local.yml
 /musicfile/
 /DEV-DOC.MD
+/jmeter/
