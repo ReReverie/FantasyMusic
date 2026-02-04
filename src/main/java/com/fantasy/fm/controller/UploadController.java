@@ -28,7 +28,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Tag(name = "音乐文件上传", description = "音乐文件上传接口")
 public class UploadController {
 
-    private final MusicService musicService;
     private final MusicManagerService musicManagerServer;
 
     /**

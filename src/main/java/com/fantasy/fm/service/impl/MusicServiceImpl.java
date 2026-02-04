@@ -41,6 +41,8 @@ import tools.jackson.core.type.TypeReference;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -90,9 +92,11 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             log.error("读取音乐文件元数据失败: ", e);
         }
         //保存音乐文件信息到数据库
+        String originalName = musicFile.getName().split("_")[2];
+        log.info("文件名: {}", originalName);
         MusicFileInfo mfi = MusicFileInfo.builder()
                 .musicId(musicId)
-                .fileName(musicFile.getName())
+                .fileName(originalName)
                 .filePath(ossUrl)
                 .fileSize(musicFile.length())
                 .fileType(musicFile.getName().substring(musicFile.getName().lastIndexOf(".") + 1))
@@ -202,14 +206,14 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         if (fileUrl == null || fileUrl.isBlank()) {
             return;
         }
-        File file = new File(fileUrl);
-        if (file.exists()) {
-            if (file.delete()) {
-                log.info("Deleted file: {}", file.getAbsolutePath());
-            } else {
-                log.warn("Failed to delete file: {}", file.getAbsolutePath());
-            }
+        String objectName = null;
+        try {
+            URL url = new URL(fileUrl);
+            objectName = url.getPath().substring(1); // 对象名:music/Kastra  - Fool For You.mp3
+        } catch (MalformedURLException e) {
+            log.error("urlPath提取失败!", e);
         }
+        ossUtil.delete(objectName);
     }
 
     @Override
