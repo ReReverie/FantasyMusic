@@ -62,7 +62,8 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_CACHE, key = RedisCacheConstant.KEY_MUSIC_LIST),
             @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_PAGE, allEntries = true),
             @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, allEntries = true),
-            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, allEntries = true)
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, allEntries = true),
+            @CacheEvict(value = RedisCacheConstant.MUSIC_COVER_CACHE, allEntries = true)
     })
     public void saveFileInfo(File musicFile, String fileHash) {
         //获取音乐元数据信息
@@ -182,7 +183,8 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_CACHE, key = RedisCacheConstant.KEY_MUSIC_LIST),
             @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_PAGE, allEntries = true),
             @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, allEntries = true),
-            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, allEntries = true)
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, allEntries = true),
+            @CacheEvict(value = RedisCacheConstant.MUSIC_COVER_CACHE, allEntries = true)
     })
     public void deleteByMusicId(Long musicId) {
         log.info("Deleting music. ID: {}", musicId);
@@ -244,7 +246,8 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
 
     @Override
     public ResponseEntity<Resource> getMusicCoverById(Long id) {
-        String coverUrl = musicMapper.selectById(id).getCoverUrl();
+        //只查询封面URL
+        String coverUrl = getCoverUrl(id);
 
         //如果封面不存在，返回404
         if (coverUrl == null) {
@@ -257,11 +260,50 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         if (!resource.exists()) {
             return ResponseEntity.notFound().build();
         }
+
+        // 确定媒体类型
+        String extension = coverUrl.substring(coverUrl.lastIndexOf(".") + 1).toLowerCase();
+        MediaType mediaType = extension.equals("jpg") ? MediaType.IMAGE_JPEG : MediaType.IMAGE_PNG;
+
+        //添加 Last-Modified 头支持协商缓存 (304 Not Modified)
+        long lasted = 0L;
+        try {
+            lasted = resource.lastModified();
+        } catch (IOException e) {
+            log.error("获取封面图片最后修改时间失败: {}", e.getMessage());
+        }
         //返回封面图片资源
         return ResponseEntity.ok()
-                .contentType(coverUrl.substring(coverUrl.lastIndexOf(".") + 1)
-                        .equals("jpg") ? MediaType.IMAGE_JPEG : MediaType.IMAGE_PNG)
+                //添加 HTTP 缓存头 (Cache-Control)
+                // max-age=86400 秒 (1天), public 表示可以被中间代理缓存
+                .header(HttpHeaders.CACHE_CONTROL, "max-age=86400, public") // 缓存一天
+                .lastModified(lasted)
+                .contentType(mediaType)
                 .body(resource);
+    }
+
+    /**
+     * 根据音乐ID获取封面URL
+     */
+    private String getCoverUrl(Long id) {
+        String redisKey = RedisCacheConstant.MUSIC_COVER_CACHE + "::" + id;
+        //尝试从缓存中获取封面URL
+        String cover = redisCacheUtil.get(redisKey, String.class);
+        if (cover != null) {
+            log.info("从缓存中获取封面URL: {}", cover);
+            return cover;
+        }
+        //缓存中没有则从数据库获取封面URL
+        String coverUrl = musicMapper.selectOne(new LambdaQueryWrapper<Music>()
+                .select(Music::getCoverUrl)
+                .eq(Music::getId, id)).getCoverUrl();
+
+        //将封面URL存入缓存
+        if (coverUrl != null) {
+            redisCacheUtil.set(redisKey, coverUrl);
+        }
+
+        return coverUrl;
     }
 
     @Override
@@ -270,7 +312,8 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_CACHE, key = RedisCacheConstant.KEY_MUSIC_LIST),
             @CacheEvict(cacheNames = RedisCacheConstant.MUSIC_INFO_PAGE, allEntries = true),
             @CacheEvict(value = RedisCacheConstant.USER_MUSIC_LIST, allEntries = true),
-            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, allEntries = true)
+            @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, allEntries = true),
+            @CacheEvict(value = RedisCacheConstant.MUSIC_COVER_CACHE, allEntries = true)
     })
     public void batchDeleteMusicByIds(List<Long> ids) {
         if (CollUtil.isEmpty(ids)) {
