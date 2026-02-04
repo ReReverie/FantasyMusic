@@ -126,11 +126,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setId(BaseContext.getCurrentId());
         user.setNickname(userInfoVO.getNickname());
         user.setAvatarUrl(userInfoVO.getAvatarUrl());
-        //检验邮箱是否合法
-        if (!userInfoVO.getEmail().matches(LoginConstant.EMAIL_REGEX)) {
-            throw new EmailInvalidException(LoginConstant.INVALID_EMAIL);
+        //如果邮箱不为空，则进行更新
+        if (userInfoVO.getEmail() != null && !userInfoVO.getEmail().isEmpty()) {
+            //检验邮箱是否合法
+            if (!userInfoVO.getEmail().matches(LoginConstant.EMAIL_REGEX)) {
+                throw new EmailInvalidException(LoginConstant.INVALID_EMAIL);
+            }
+            user.setEmail(userInfoVO.getEmail());
+        } else {
+            user.setEmail("");
         }
-        user.setEmail(userInfoVO.getEmail());
         user.setUpdateTime(LocalDateTime.now());
         this.updateById(user);
     }
