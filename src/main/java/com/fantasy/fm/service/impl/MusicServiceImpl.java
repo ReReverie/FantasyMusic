@@ -32,6 +32,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -135,13 +136,35 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     public ResponseEntity<Resource> playMusic(Long musicId) {
         // 获取音乐文件信息
         MusicFileInfo fileInfo = musicManagerMapper.getFileInfoByMusicId(musicId);
-        File musicFile = new File(fileInfo.getFilePath());
-        if (fileInfo.getFilePath().isBlank() || !musicFile.exists()) {
+        if (fileInfo == null) {
             log.error("音乐文件不存在，路径: {}", fileInfo.getFilePath());
             return ResponseEntity.notFound().build();
         }
-        //创建资源对象
-        Resource resource = new FileSystemResource(musicFile);
+        String filePath = fileInfo.getFilePath();
+        Resource resource;
+        //判断是否为网络路径OSS
+        try {
+            //判断是URL还是本地文件路径
+            if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+                resource = new UrlResource(filePath);
+                //验证资源是否存在
+                if (!resource.exists() || !resource.isReadable()) {
+                    log.error("远程音乐文件无法访问，路径: {}", filePath);
+                    return ResponseEntity.notFound().build();
+                }
+            } else {
+                //本地文件路径
+                File musicFile = new File(filePath);
+                if (filePath.isBlank() || !musicFile.exists()) {
+                    log.error("本地音乐文件不存在，路径: {}", filePath);
+                    return ResponseEntity.notFound().build();
+                }
+                resource = new FileSystemResource(musicFile);
+            }
+        } catch (MalformedURLException e) {
+            log.error("音乐文件URL格式错误，路径: {}", filePath);
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("audio/mpeg"))
                 .body(resource);
