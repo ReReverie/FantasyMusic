@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 
 /**
  * 音乐文件上传控制器
@@ -58,9 +57,8 @@ public class UploadController {
         }
 
         //保存音乐文件
-        File musicFile = musicManagerServer.saveFile(multipartFile, fileHash);
-        if (musicFile == null) return Result.error(MusicConstant.MUSIC_UPLOAD_FAILURE);
-        musicService.saveFileInfo(musicFile, fileHash);
+        String musicFilePath = musicManagerServer.saveFile2OSS(multipartFile, fileHash);
+        if (musicFilePath == null) return Result.error(MusicConstant.MUSIC_UPLOAD_FAILURE);
         return Result.success();
     }
 }

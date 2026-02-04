@@ -4,12 +4,18 @@ import com.aliyun.oss.ClientException;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.OSSException;
+import com.aliyun.oss.model.PutObjectRequest;
+import com.aliyun.oss.model.PutObjectResult;
 import com.fantasy.fm.properties.OssProperties;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 
 @Slf4j
 @Component
@@ -32,14 +38,19 @@ public class OSSUtil {
     /**
      * 上传文件到阿里云OSS
      *
-     * @param bytes      文件字节数组
+     * @param data       文件字节数组
      * @param objectName 对象名称(包含路径)
      * @return 文件访问URL
      */
-    public String upload(byte[] bytes, String objectName) {
+    public String upload(byte[] data, String objectName) {
+        PutObjectResult result = null;
         try {
-            // 创建PutObject请求
-            client.putObject(ossProperties.getBucketName(), objectName, new ByteArrayInputStream(bytes));
+            //将字节数组转换成输入流
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
+            // 创建PutObjectRequest对象。
+            PutObjectRequest putObjectRequest = new PutObjectRequest(ossProperties.getBucketName(), objectName, inputStream);
+            // 创建PutObject请求。
+            result = client.putObject(putObjectRequest);
         } catch (OSSException oe) {
             System.out.println("Caught an OSSException, which means your request made it to OSS, "
                     + "but was rejected with an error response for some reason.");
@@ -52,8 +63,10 @@ public class OSSUtil {
                     + "a serious internal problem while trying to communicate with OSS, "
                     + "such as not being able to access the network.");
             System.out.println("Error Message:" + ce.getMessage());
+        } catch (Exception e) {
+            log.error("上传文件到OSS失败: {}", e.getMessage());
+            return null;
         }
-
         //文件访问路径规则:https://BucketName.Endpoint/ObjectName
         String url = "https://" + ossProperties.getBucketName()
                 + "." + ossProperties.getEndpoint() + "/" + objectName;
@@ -62,8 +75,8 @@ public class OSSUtil {
     }
 
     //关闭客户端连接
-    @PreDestroy
-    public void shutdown() {
+    @PreDestroy //自动调用
+    private void shutdown() {
         if (client != null) {
             client.shutdown();
             log.info("OSSClient连接已关闭");

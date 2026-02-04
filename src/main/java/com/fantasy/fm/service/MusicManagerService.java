@@ -12,12 +12,21 @@ import java.io.File;
 public interface MusicManagerService extends IService<MusicFileInfo> {
 
     /**
-     * 保存文件并返回文件路径
+     * 保存文件到OSS并返回文件路径
      * @param multipartFile 上传的文件
      * @param fileHash 前端计算的哈希值
      * @return 文件对象
      */
-    File saveFile(MultipartFile multipartFile, String fileHash);
+    String saveFile2OSS(MultipartFile multipartFile, String fileHash);
+
+    /**
+     * 保存文件到本地并返回文件路径
+     * @param multipartFile 上传的文件
+     * @param fileHash 前端计算的哈希值
+     * @return 文件对象
+     */
+    @Deprecated
+    File saveFile2Local(MultipartFile multipartFile, String fileHash);
 
     /**
      * 根据文件哈希获取音乐文件信息

@@ -16,9 +16,10 @@ public interface MusicService extends IService<Music> {
      * 保存音乐文件信息
      *
      * @param musicFile 音乐文件
-     * @param fileHash 文件哈希值
+     * @param fileHash  文件哈希值
+     * @param ossUrl    OSS文件访问URL
      */
-    void saveFileInfo(File musicFile, String fileHash);
+    void saveFileInfo(File musicFile, String fileHash, String ossUrl);
 
     /**
      * 播放音乐

@@ -17,6 +17,7 @@ import com.fantasy.fm.mapper.MusicManagerMapper;
 import com.fantasy.fm.domain.entity.Music;
 import com.fantasy.fm.domain.entity.MusicFileInfo;
 import com.fantasy.fm.service.MusicService;
+import com.fantasy.fm.utils.OSSUtil;
 import com.fantasy.fm.utils.RedisCacheUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +40,6 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -55,6 +55,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     private final MusicManagerMapper musicManagerMapper;
     private final MusicListTrackMapper musicListTrackMapper;
     private final RedisCacheUtil redisCacheUtil;
+    private final OSSUtil ossUtil;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -65,7 +66,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             @CacheEvict(value = RedisCacheConstant.MUSIC_LIST_DETAIL, allEntries = true),
             @CacheEvict(value = RedisCacheConstant.MUSIC_COVER_CACHE, allEntries = true)
     })
-    public void saveFileInfo(File musicFile, String fileHash) {
+    public void saveFileInfo(File musicFile, String fileHash, String ossUrl) {
         //获取音乐元数据信息
         AudioFile audioFile;
         Music musicInfo;
@@ -92,7 +93,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         MusicFileInfo mfi = MusicFileInfo.builder()
                 .musicId(musicId)
                 .fileName(musicFile.getName())
-                .filePath(musicFile.getAbsolutePath())
+                .filePath(ossUrl)
                 .fileSize(musicFile.length())
                 .fileType(musicFile.getName().substring(musicFile.getName().lastIndexOf(".") + 1))
                 .uploadTime(LocalDateTime.now())
@@ -104,7 +105,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     }
 
     /**
-     * 获取封面图片并保存到本地，返回封面图片路径
+     * 获取封面图片并保存到OSS，返回封面图片路径
      */
     private String getCoverUrl(Tag tag, File musicFile) {
         //获取音乐目录
@@ -113,25 +114,17 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             return null;
         }
         //创建cover目录
-        File coverDir = new File(musicFile.getParent(), "cover");
+        /*File coverDir = new File(musicFile.getParent(), "cover");
         if (!coverDir.exists()) {
             coverDir.mkdirs();
-        }
+        }*/
         //构建目标文件路径
-        String musicFileName = musicFile
-                .getName()
-                .substring(0, musicFile.getName().lastIndexOf(".")) + "_Cover.jpg";
+        String originalName = musicFile.getName().split("_")[2];
+        String coverDir = "cover/" + originalName + "_Cover.jpg";
         //读取封面图片数据
         byte[] data = artwork.getBinaryData();
-        File coverFile = new File(coverDir, musicFileName);
-        //保存封面图片到本地
-        try (FileOutputStream fos = new FileOutputStream(coverFile)) {
-            fos.write(data);
-        } catch (IOException e) {
-            log.error("封面图片保存失败: {}", e.getMessage());
-            throw new RuntimeException(e);
-        }
-        return coverFile.getAbsolutePath();
+        //保存封面图片到OSS
+        return ossUtil.upload(data, coverDir);
     }
 
     @Override
