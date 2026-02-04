@@ -203,6 +203,10 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     }
 
     private void deleteFile(String fileUrl) {
+        //防止NPE
+        if (fileUrl == null || fileUrl.isBlank()) {
+            return;
+        }
         File file = new File(fileUrl);
         if (file.exists()) {
             if (file.delete()) {
