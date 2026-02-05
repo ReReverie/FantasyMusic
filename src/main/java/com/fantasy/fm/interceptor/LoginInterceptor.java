@@ -33,7 +33,8 @@ public class LoginInterceptor implements HandlerInterceptor {
      * 返回false中断流程（如通过响应直接返回）。
      */
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    @SuppressWarnings("NullableProblems")
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler){
         String token = request.getHeader(jwtProperties.getTokenName());
         log.info("登录拦截器，获取到的令牌: {}", token);
 
@@ -88,7 +89,8 @@ public class LoginInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex) throws Exception {
+    @SuppressWarnings("NullableProblems")
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable Exception ex) {
         //请求完一次移除线程中的数据,防止内存泄漏
         BaseContext.removeCurrentId();
     }

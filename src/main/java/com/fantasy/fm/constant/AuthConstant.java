@@ -2,8 +2,6 @@ package com.fantasy.fm.constant;
 
 public class AuthConstant {
     public static final String USER_ID = "userId";
-    public static final String EMAIL = "email";
-    public static final String USERNAME = "username";
     public static final String EMAIL_REGEX =
             "^(([^<>()\\[\\]\\\\.,;:\\s@\"]+(\\.[^<>()\\[\\]\\\\.,;:\\s@\"]+)*)|(\".+\"))@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$";
     public static final String USERNAME_REGEX = "^(?!\\d+$).{3,}$";
