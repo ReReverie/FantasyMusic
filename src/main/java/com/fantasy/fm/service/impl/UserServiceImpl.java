@@ -203,7 +203,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
             user.setEmail(userInfoVO.getEmail());
         } else {
-            user.setEmail("");
+            throw new EmailNotAllowedEmptyException(AuthConstant.EMAIL_NOT_ALLOW_EMPTY);
         }
         user.setUpdateTime(LocalDateTime.now());
         this.updateById(user);

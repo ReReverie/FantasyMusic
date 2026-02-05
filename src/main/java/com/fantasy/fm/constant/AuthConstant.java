@@ -23,4 +23,5 @@ public class AuthConstant {
     public static final String CODE_INVALID = "验证码错误或已失效";
     public static final String INPUT_EMPTY = "邮箱和验证码不能为空";
     public static final String CODE_WRONG = "验证码错误或失效";
+    public static final String EMAIL_NOT_ALLOW_EMPTY = "邮箱不能为空,否则无法找回账号";
 }
