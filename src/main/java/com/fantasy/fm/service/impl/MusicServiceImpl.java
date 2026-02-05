@@ -35,6 +35,7 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -44,6 +45,8 @@ import tools.jackson.core.type.TypeReference;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -151,7 +154,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             log.error("音乐的url不存在");
             return ResponseEntity.notFound().build();
         }
-        if (!(fileUrl.startsWith("http://") || fileUrl.startsWith("https://"))){
+        if (!(fileUrl.startsWith("http://") || fileUrl.startsWith("https://"))) {
             log.error("音乐文件URL格式错误，路径: {}", fileUrl);
             return ResponseEntity.badRequest().build();
         }
@@ -242,41 +245,27 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     }
 
     @Override
-    public ResponseEntity<Resource> getMusicCoverById(Long id) {
+    public ResponseEntity<Object> getMusicCoverById(Long id) {
         //只查询封面URL
         String coverUrl = getCoverUrl(id);
 
-        //如果封面不存在，返回404
-        if (coverUrl == null) {
+        if (coverUrl == null || coverUrl.isBlank()) {
             return ResponseEntity.notFound().build();
         }
-        //创建资源对象
-        FileSystemResource resource = new FileSystemResource(coverUrl);
-
-        //检查资源文件是否存在
-        if (!resource.exists()) {
-            return ResponseEntity.notFound().build();
+        //校验是否为 OSS 链接
+        if (!(coverUrl.startsWith("http://") || coverUrl.startsWith("https://"))) {
+            log.error("封面URL格式错误，URL: {}", coverUrl);
+            return ResponseEntity.badRequest().build();
         }
 
-        // 确定媒体类型
-        String extension = coverUrl.substring(coverUrl.lastIndexOf(".") + 1).toLowerCase();
-        MediaType mediaType = extension.equals("jpg") ? MediaType.IMAGE_JPEG : MediaType.IMAGE_PNG;
-
-        //添加 Last-Modified 头支持协商缓存 (304 Not Modified)
-        long lasted = 0L;
         try {
-            lasted = resource.lastModified();
-        } catch (IOException e) {
-            log.error("获取封面图片最后修改时间失败: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .location(new URI(coverUrl))
+                    .build();
+        } catch (URISyntaxException e) {
+            log.error("URL格式错误，URL: {}", coverUrl);
+            return ResponseEntity.internalServerError().build();
         }
-        //返回封面图片资源
-        return ResponseEntity.ok()
-                //添加 HTTP 缓存头 (Cache-Control)
-                // max-age=86400 秒 (1天), public 表示可以被中间代理缓存
-                .header(HttpHeaders.CACHE_CONTROL, "max-age=86400, public") // 缓存一天
-                .lastModified(lasted)
-                .contentType(mediaType)
-                .body(resource);
     }
 
     /**

@@ -67,7 +67,7 @@ public class MusicInfoController {
      */
     @Operation(summary = "获取音乐封面", description = "根据音乐ID获取音乐封面")
     @GetMapping("/cover/{id}")
-    public ResponseEntity<Resource> getMusicCover(@PathVariable Long id) {
+    public ResponseEntity<Object> getMusicCover(@PathVariable Long id) {
         return musicService.getMusicCoverById(id);
     }
 }

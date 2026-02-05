@@ -76,5 +76,5 @@ public interface MusicService extends IService<Music> {
      * @param id 音乐ID
      * @return 音乐封面资源
      */
-    ResponseEntity<Resource> getMusicCoverById(Long id);
+    ResponseEntity<Object> getMusicCoverById(Long id);
 }
