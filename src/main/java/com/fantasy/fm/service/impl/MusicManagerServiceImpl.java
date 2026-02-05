@@ -3,7 +3,9 @@ package com.fantasy.fm.service.impl;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fantasy.fm.constant.MusicConstant;
 import com.fantasy.fm.constant.SystemConstant;
+import com.fantasy.fm.exception.MusicFileExistsException;
 import com.fantasy.fm.mapper.MusicManagerMapper;
 import com.fantasy.fm.domain.entity.MusicFileInfo;
 import com.fantasy.fm.service.MusicManagerService;
@@ -31,9 +33,8 @@ public class MusicManagerServiceImpl extends ServiceImpl<MusicManagerMapper, Mus
 
     @Override
     public String saveFile2OSS(MultipartFile multipartFile, String fileHash) {
-        if (getByFileHash(fileHash) != null){
-            log.info("文件已存在, 哈希值: {}", fileHash);
-            return null;
+        if (getByFileHash(fileHash) != null) {
+            throw new MusicFileExistsException(MusicConstant.MUSIC_FILE_EXISTS);
         }
         String originalFilename = multipartFile.getOriginalFilename();
         // 处理文件保存逻辑
@@ -62,7 +63,7 @@ public class MusicManagerServiceImpl extends ServiceImpl<MusicManagerMapper, Mus
 
     @Override
     public File saveFile2Local(MultipartFile multipartFile, String fileHash) {
-        if (getByFileHash(fileHash) != null){
+        if (getByFileHash(fileHash) != null) {
             log.info("文件已存在, 哈希值: {}", fileHash);
             return null;
         }
