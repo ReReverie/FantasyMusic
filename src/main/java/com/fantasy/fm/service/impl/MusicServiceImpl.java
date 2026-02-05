@@ -3,6 +3,7 @@ package com.fantasy.fm.service.impl;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.MusicConstant;
@@ -219,6 +220,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     public PageDTO<MusicVO> queryMusicPage(MusicPageQuery query) {
         // 构建分页查询对象
         Page<Music> page = Page.of(query.getPageNum(), query.getPageSize());
+        page.addOrder(OrderItem.desc("id"));
         // 执行分页查询
         page = musicMapper.selectPage(page, null);
         // 将分页结果转换为 PageDTO<MusicVO>并返回

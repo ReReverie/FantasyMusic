@@ -17,6 +17,10 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Schema(description = "分页结果DTO")
 public class PageDTO<T> {
+    @Schema(description = "当前页码", example = "1")
+    private Integer pageNum;      // 当前页
+    @Schema(description = "每页大小", example = "10")
+    private Integer pageSize;     // 每页大小
     @Schema(description = "总记录数", example = "100")
     private Long total; // 总记录数
     @Schema(description = "总页数", example = "10")
@@ -33,7 +37,13 @@ public class PageDTO<T> {
      * @return VO的分页对象
      */
     public static <VO, PO> PageDTO<VO> empty(Page<PO> p) {
-        return new PageDTO<>(p.getTotal(), p.getPages(), Collections.emptyList());
+        return new PageDTO<>(
+                (int) p.getCurrent(),    // pageNum
+                (int) p.getSize(),       // pageSize
+                p.getTotal(),            // total
+                p.getPages(),            // pages
+                Collections.emptyList()  // list
+        );
     }
 
     /**
@@ -48,9 +58,12 @@ public class PageDTO<T> {
     public static <PO, VO> PageDTO<VO> of(Page<PO> p, Class<VO> clazz) {
         //封装VO
         PageDTO<VO> pageDTO = new PageDTO<>();
-        //总的记录数
-        pageDTO.setTotal(p.getTotal());
-        pageDTO.setPages(p.getPages());
+        //设置分页参数
+        pageDTO.setPageNum((int) p.getCurrent());    // 当前页码
+        pageDTO.setPageSize((int) p.getSize());      // 每页大小
+        pageDTO.setTotal(p.getTotal());              // 总记录数
+        pageDTO.setPages(p.getPages());        // 总页数
+
         //当前页数据
         List<PO> records = p.getRecords();
         //如果records没有数据，直接返回
@@ -82,6 +95,12 @@ public class PageDTO<T> {
         // 2.数据转换
         List<VO> vos = records.stream().map(convertor).collect(Collectors.toList());
         // 3.封装返回
-        return new PageDTO<>(p.getTotal(), p.getPages(), vos);
+        return new PageDTO<>(
+                (int) p.getCurrent(),    // pageNum
+                (int) p.getSize(),       // pageSize
+                p.getTotal(),            // total
+                p.getPages(),            // pages
+                vos                      // list
+        );
     }
 }
