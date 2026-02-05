@@ -26,14 +26,14 @@ public interface MusicService extends IService<Music> {
      *
      * @param musicId 音乐ID
      */
-    ResponseEntity<Resource> playMusic(Long musicId);
+    ResponseEntity<Object> playMusic(Long musicId);
 
     /**
      * 下载音乐
      *
      * @param musicId 音乐ID
      */
-    ResponseEntity<Resource> downloadMusic(Long musicId);
+    ResponseEntity<Object> downloadMusic(Long musicId);
 
     /**
      * 根据音乐ID删除音乐

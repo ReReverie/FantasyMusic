@@ -30,7 +30,7 @@ public class MusicController {
      */
     @Operation(summary = "播放音乐", description = "根据音乐ID播放音乐文件")
     @GetMapping("/play/{id}")
-    public ResponseEntity<Resource> playMusic(@PathVariable("id") Long musicId) {
+    public ResponseEntity<Object> playMusic(@PathVariable("id") Long musicId) {
         log.info("Playing music. ID: {}", musicId);
         return musicService.playMusic(musicId);
     }
@@ -43,7 +43,7 @@ public class MusicController {
     @Operation(summary = "下载音乐", description = "根据音乐ID下载音乐文件")
     @AutoPermissionCheck(OperationPermission.DOWNLOAD)
     @GetMapping("/download/{id}")
-    public ResponseEntity<Resource> downloadMusic(@PathVariable("id") Long musicId) {
+    public ResponseEntity<Object> downloadMusic(@PathVariable("id") Long musicId) {
         log.info("Downloading music. ID: {}", musicId);
         return musicService.downloadMusic(musicId);
     }

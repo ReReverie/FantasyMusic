@@ -10,15 +10,11 @@ import org.apache.ibatis.annotations.Select;
 public interface MusicManagerMapper extends BaseMapper<MusicFileInfo> {
 
     /**
-     * 根据音乐ID查询音乐文件信息
+     * 根据音乐ID查询音乐URL
      *
      * @param musicId 音乐ID
-     * @return 音乐文件信息
+     * @return 音乐文件存放URL
      */
-    default MusicFileInfo getFileInfoByMusicId(Long musicId) {
-        return this.selectOne(
-                new LambdaQueryWrapper<MusicFileInfo>()
-                        .eq(MusicFileInfo::getMusicId, musicId)
-        );
-    }
+    @Select("SELECT file_path FROM music_file_info WHERE music_id = #{musicId}")
+    String selectFileUrlByMusicId(Long musicId);
 }

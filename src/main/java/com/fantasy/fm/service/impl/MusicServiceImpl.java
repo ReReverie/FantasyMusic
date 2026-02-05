@@ -27,6 +27,7 @@ import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.images.Artwork;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -134,68 +135,46 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     }
 
     @Override
-    public ResponseEntity<Resource> playMusic(Long musicId) {
-        // 获取音乐文件信息
-        MusicFileInfo fileInfo = musicManagerMapper.getFileInfoByMusicId(musicId);
-        if (fileInfo == null) {
-            log.error("音乐文件不存在，路径: {}", fileInfo.getFilePath());
-            return ResponseEntity.notFound().build();
-        }
-        String filePath = fileInfo.getFilePath();
-        Resource resource;
-        //判断是否为网络路径OSS
-        try {
-            //判断是URL还是本地文件路径
-            if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
-                resource = new UrlResource(filePath);
-                //验证资源是否存在
-                if (!resource.exists() || !resource.isReadable()) {
-                    log.error("远程音乐文件无法访问，路径: {}", filePath);
-                    return ResponseEntity.notFound().build();
-                }
-            } else {
-                //本地文件路径
-                File musicFile = new File(filePath);
-                if (filePath.isBlank() || !musicFile.exists()) {
-                    log.error("本地音乐文件不存在，路径: {}", filePath);
-                    return ResponseEntity.notFound().build();
-                }
-                resource = new FileSystemResource(musicFile);
-            }
-        } catch (MalformedURLException e) {
-            log.error("音乐文件URL格式错误，路径: {}", filePath);
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType("audio/mpeg"))
-                .body(resource);
+    public ResponseEntity<Object> playMusic(Long musicId) {
+        return getUrl(musicId, false);
     }
 
     @Override
-    public ResponseEntity<Resource> downloadMusic(Long musicId) {
+    public ResponseEntity<Object> downloadMusic(Long musicId) {
+        return getUrl(musicId, true);
+    }
+
+    /**
+     * 获取音乐文件的预签名URL
+     */
+    private @NonNull ResponseEntity<Object> getUrl(Long musicId, boolean isDownload) {
         // 获取音乐文件信息
-        MusicFileInfo fileInfo = musicManagerMapper.getFileInfoByMusicId(musicId);
-        File musicFile = new File(fileInfo.getFilePath());
-        if (fileInfo.getFilePath().isBlank() || !musicFile.exists()) {
-            log.error("音乐文件不存在，路径: {}", fileInfo.getFilePath());
+        String fileUrl = musicManagerMapper.selectFileUrlByMusicId(musicId);
+        if (fileUrl == null || fileUrl.isBlank()) {
+            log.error("音乐的url不存在");
             return ResponseEntity.notFound().build();
         }
-        //处理下载文件名带"."的后缀
-        String fileName = fileInfo.getFileName();
-        int dotIndex = fileName.lastIndexOf('.');
-        String nameWithoutExt = dotIndex == -1 ? fileName : fileName.substring(0, dotIndex);
-        String ext = dotIndex == -1 ? "" : fileName.substring(dotIndex);
-        String musicName = nameWithoutExt + ext;
-        //创建资源对象
-        Resource resource = new FileSystemResource(musicFile);
-        //处理文件名中文乱码问题
-        String encodeName = URLEncoder
-                .encode(musicName, StandardCharsets.UTF_8)
-                .replaceAll("\\+", "%20"); // 空格处理
-        return ResponseEntity.ok()
-                .contentType(MediaType.APPLICATION_OCTET_STREAM) // 设置为二进制流下载
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodeName) // 设置下载文件名
-                .body(resource);
+        if (!(fileUrl.startsWith("http://") || fileUrl.startsWith("https://"))){
+            log.error("音乐文件URL格式错误，路径: {}", fileUrl);
+            return ResponseEntity.badRequest().build();
+        }
+        try {
+            //生成预签名URL, 过期时间为1小时
+            String objectName = new URL(fileUrl).getPath().substring(1); // 获取路径同时去掉前面的"/"
+            URL presignedUrl;
+            if (isDownload) {
+                // 【下载模式】：调用新写的带文件名的方法，强制下载
+                String fileName = new URL(fileUrl).getPath().split("/" + SystemConstant.OSS_MUSIC_DIR)[1];
+                presignedUrl = ossUtil.generateDownloadPresignedUrl(objectName, fileName, 3600);
+            } else {
+                // 【播放模式】：普通链接
+                presignedUrl = ossUtil.generatePresignedUrl(objectName, 3600);
+            }
+            return ResponseEntity.ok(presignedUrl.toString());
+        } catch (MalformedURLException e) {
+            log.error("音乐文件URL格式错误，URL: {}", fileUrl);
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @Override
