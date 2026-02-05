@@ -45,14 +45,13 @@ public class OSSUtil {
      * @return 文件访问URL
      */
     public String upload(byte[] data, String objectName) {
-        PutObjectResult result = null;
         try {
             //将字节数组转换成输入流
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
             // 创建PutObjectRequest对象。
             PutObjectRequest putObjectRequest = new PutObjectRequest(ossProperties.getBucketName(), objectName, inputStream);
             // 创建PutObject请求。
-            result = client.putObject(putObjectRequest);
+            client.putObject(putObjectRequest);
         } catch (OSSException oe) {
             log.error("文件上传到OSS时出现问题,{}", oe.getErrorMessage());
             System.out.println("Caught an OSSException, which means your request made it to OSS, "
