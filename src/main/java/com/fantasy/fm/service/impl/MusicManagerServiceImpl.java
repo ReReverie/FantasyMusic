@@ -3,6 +3,7 @@ package com.fantasy.fm.service.impl;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fantasy.fm.constant.SystemConstant;
 import com.fantasy.fm.mapper.MusicManagerMapper;
 import com.fantasy.fm.domain.entity.MusicFileInfo;
 import com.fantasy.fm.service.MusicManagerService;
@@ -49,7 +50,7 @@ public class MusicManagerServiceImpl extends ServiceImpl<MusicManagerMapper, Mus
             musicTempFile = File.createTempFile("music_", "_" + originalFilename);
             Files.write(musicTempFile.toPath(), bytes);
             //用字节上传
-            String filePath = "music/" + originalFilename;
+            String filePath = SystemConstant.OSS_MUSIC_DIR + originalFilename;
             ossUrl = ossUtil.upload(bytes, filePath);
             //保存结果到数据库中
             musicService.saveFileInfo(musicTempFile, fileHash, ossUrl);

@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.MusicConstant;
 import com.fantasy.fm.constant.RedisCacheConstant;
+import com.fantasy.fm.constant.SystemConstant;
 import com.fantasy.fm.domain.dto.PageDTO;
 import com.fantasy.fm.domain.entity.MusicListTrack;
 import com.fantasy.fm.domain.query.MusicPageQuery;
@@ -125,7 +126,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         }*/
         //构建目标文件路径
         String originalName = musicFile.getName().split("_")[2];
-        String coverDir = "cover/" + originalName + "_Cover.jpg";
+        String coverDir = SystemConstant.OSS_COVER_DIR + originalName + "_Cover.jpg";
         //读取封面图片数据
         byte[] data = artwork.getBinaryData();
         //保存封面图片到OSS
