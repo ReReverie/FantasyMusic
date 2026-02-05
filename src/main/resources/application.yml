@@ -12,6 +12,18 @@ spring:
       port: ${spring.data.redis.port}
       password: ${spring.data.redis.password}
       database: ${spring.data.redis.database}
+  mail:
+    host: ${spring.mail.host}
+    username: ${spring.mail.username}
+    password: ${spring.mail.password}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
   profiles:
     active: local
   servlet:
@@ -55,3 +67,7 @@ fm:
     access-key-id: ${fm.aliyunoss.access-key-id}
     access-key-secret: ${fm.aliyunoss.access-key-secret}
     expire-time: ${fm.aliyunoss.expire-time}
+  mail:
+    from: ${fm.mail.from}  # 直接引用 spring 的配置
+    subject-prefix: ${fm.mail.subject-prefix}
+    code-expire-minutes: ${fm.mail.code-expire-minutes}

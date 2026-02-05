@@ -4,14 +4,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 @Data
-@Schema(description = "用户登录DTO")
-public class UserLoginDTO {
+@Schema(description = "用户注册DTO")
+public class UserRegisterDTO {
     @Schema(description = "用户名", example = "john_doe")
     private String username;
     @Schema(description = "密码", example = "securePassword123")
     private String password;
-    @Schema(description = "验证码", example = "a1b2")
-    private String captchaCode;
-    @Schema(description = "验证码UUID", example = "550e8400-e29b-41d4-a716-446655440000")
-    private String captchaUuid;
+    @Schema(description = "邮箱", example = "xxxx@xx.com")
+    private String email;
+    @Schema(description = "邮箱验证码", example = "123456")
+    private String emailCode;
 }

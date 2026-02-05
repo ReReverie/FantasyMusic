@@ -1,10 +1,12 @@
 package com.fantasy.fm.service.impl;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.RedisCacheConstant;
 import com.fantasy.fm.context.BaseContext;
+import com.fantasy.fm.domain.dto.UserRegisterDTO;
 import com.fantasy.fm.exception.*;
-import com.fantasy.fm.constant.LoginConstant;
+import com.fantasy.fm.constant.AuthConstant;
 import com.fantasy.fm.domain.dto.UpdatePasswordDTO;
 import com.fantasy.fm.domain.dto.UserLoginDTO;
 import com.fantasy.fm.domain.entity.User;
@@ -36,22 +38,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public User login(UserLoginDTO userLoginDTO) {
         String username = userLoginDTO.getUsername();
         //构建redis的key
-        String redisKey = "login:fail" + "::" + username;
+        String redisKey = RedisCacheConstant.LOGIN_FAIL + "::" + username;
         //获取登录失败次数
         Integer failCount = redisCacheUtil.get(redisKey, Integer.class);
         //如果failCount为空,表示用户第一次进行登录操作,将失败次数设置为1
-        if (failCount != null && failCount >= 3){
+        if (failCount != null && failCount >= 3) {
             //如果到这表示失败次数过多,强制检查验证码
-            if (userLoginDTO.getCaptchaCode() == null || userLoginDTO.getCaptchaCode().isEmpty() || userLoginDTO.getCaptchaUuid() == null){
-                throw new CaptchaRequiredException("系统检测到异常登录，请输入验证码");
+            if (userLoginDTO.getCaptchaCode() == null || userLoginDTO.getCaptchaCode().isEmpty() || userLoginDTO.getCaptchaUuid() == null) {
+                throw new CaptchaRequiredException(AuthConstant.NEED_CAPTCHA);
             }
             //校验验证码有效性
-            String redisCaptchaKey = "login:captcha" + "::" + userLoginDTO.getCaptchaUuid();
+            String redisCaptchaKey = RedisCacheConstant.LOGIN_CAPTCHA + "::" + userLoginDTO.getCaptchaUuid();
             String realCaptchaKey = redisCacheUtil.get(redisCaptchaKey, String.class);
             //如果验证码错误，抛出异常
-            if (realCaptchaKey == null || !realCaptchaKey.equalsIgnoreCase(userLoginDTO.getCaptchaCode())){
+            if (realCaptchaKey == null || !realCaptchaKey.equalsIgnoreCase(userLoginDTO.getCaptchaCode())) {
                 log.info("用户登录失败，验证码错误：{}", userLoginDTO);
-                throw new CaptchaErrorException("验证码错误或已失效");
+                throw new CaptchaErrorException(AuthConstant.CODE_INVALID);
             }
             //验证码校验通过, 删除缓存中的验证码
             redisCacheUtil.delete(redisCaptchaKey);
@@ -66,7 +68,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             log.info("用户登录失败，用户未找到：{}", userLoginDTO);
             //记录登录失败次数
             incrementFailCount(redisKey);
-            throw new UserNotFoundException(LoginConstant.USER_NOT_FOUND);
+            throw new UserNotFoundException(AuthConstant.USER_NOT_FOUND);
         }
 
         //如果执行到这里，说明用户存在，验证密码
@@ -77,7 +79,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             log.info("用户登录失败，密码错误：{}", userLoginDTO);
             //记录登录失败次数
             incrementFailCount(redisKey);
-            throw new PasswordErrorException(LoginConstant.ERROR_PASSWORD);
+            throw new PasswordErrorException(AuthConstant.ERROR_PASSWORD);
         }
 
         //如果登录成功,删除失败缓存
@@ -89,11 +91,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 记录登录失败次数
+     *
      * @param redisKey redis的key
      */
     private void incrementFailCount(String redisKey) {
         Integer count = redisCacheUtil.get(redisKey, Integer.class);
-        if (count == null){
+        if (count == null) {
             count = 1;
         } else {
             count++;
@@ -102,20 +105,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public void register(UserLoginDTO userLoginDTO) {
-        String username = userLoginDTO.getUsername();
-        String password = getDecryptPassword(userLoginDTO.getPassword());
+    public void register(UserRegisterDTO userRegisterDTO) {
+        String username = userRegisterDTO.getUsername();
+        String password = getDecryptPassword(userRegisterDTO.getPassword());
 
         //对用户名的合法性进行校验:不少于 3 位，不能是纯数字
-        if (!username.matches(LoginConstant.USERNAME_REGEX)) {
-            log.info("用户注册失败，用户名不合法：{}", userLoginDTO);
-            throw new UsernameInvalidException(LoginConstant.USERNAME_INVALID);
+        if (!username.matches(AuthConstant.USERNAME_REGEX)) {
+            log.info("用户注册失败，用户名不合法：{}", userRegisterDTO);
+            throw new UsernameInvalidException(AuthConstant.USERNAME_INVALID);
         }
 
         //对密码的合法性进行校验:8–24 位，必须包含大小写字母，允许特殊字符
-        if (!password.matches(LoginConstant.PASSWORD_REGEX)) {
-            log.info("用户注册失败，密码不合法：{}", userLoginDTO);
-            throw new PasswordInvalidException(LoginConstant.INVALID_PASSWORD);
+        if (!password.matches(AuthConstant.PASSWORD_REGEX)) {
+            log.info("用户注册失败，密码不合法：{}", userRegisterDTO);
+            throw new PasswordInvalidException(AuthConstant.INVALID_PASSWORD);
         }
 
         User existingUser = this.lambdaQuery()
@@ -123,15 +126,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .one();
 
         if (existingUser != null) {
-            log.info("用户注册失败，用户名已存在：{}", userLoginDTO);
-            throw new UserAlreadyExistsException(LoginConstant.USER_ALREADY_EXISTS);
+            log.info("用户注册失败，用户名已存在：{}", userRegisterDTO);
+            throw new UserAlreadyExistsException(AuthConstant.USER_ALREADY_EXISTS);
         }
+
+        //获取用户输入的邮箱和验证码
+        String email = userRegisterDTO.getEmail();
+        String emailCode = userRegisterDTO.getEmailCode();
+
+        if (StrUtil.hasBlank(email, emailCode)) {
+            throw new EmailInvalidException(AuthConstant.INPUT_EMPTY);
+        }
+        //从Redis中获取验证码
+        String redisKey = RedisCacheConstant.EMAIL_CODE + "::" + email;
+        String realCode = redisCacheUtil.get(redisKey, String.class);
+        //判断验证码是否正确或失效
+        if (realCode == null || !realCode.equals(emailCode)) {
+            throw new EmailCodeErrorException(AuthConstant.CODE_WRONG);
+        }
+        //从缓存中删除验证码
+        redisCacheUtil.delete(redisKey);
+
         //对用户密码进行加密处理
         String encodePw = PasswordUtil.encodePassword(password);
 
         User user = new User();
         user.setUsername(username);
         user.setPassword(encodePw);
+        user.setEmail(email);
         user.setCreatedTime(LocalDateTime.now());
         user.setUpdateTime(LocalDateTime.now());
         //保存用户信息到数据库
@@ -151,7 +173,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             password = rsaDecryptor.decrypt(rsaPassword);
         } catch (Exception e) {
             log.error("登录异常，密码解密失败：", e);
-            throw new LoginException(LoginConstant.LOGIN_EXCEPTION);
+            throw new LoginException(AuthConstant.LOGIN_EXCEPTION);
         }
         return password;
     }
@@ -176,8 +198,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //如果邮箱不为空，则进行更新
         if (userInfoVO.getEmail() != null && !userInfoVO.getEmail().isEmpty()) {
             //检验邮箱是否合法
-            if (!userInfoVO.getEmail().matches(LoginConstant.EMAIL_REGEX)) {
-                throw new EmailInvalidException(LoginConstant.INVALID_EMAIL);
+            if (!userInfoVO.getEmail().matches(AuthConstant.EMAIL_REGEX)) {
+                throw new EmailInvalidException(AuthConstant.INVALID_EMAIL);
             }
             user.setEmail(userInfoVO.getEmail());
         } else {
@@ -198,20 +220,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //验证旧密码是否正确
         if (!PasswordUtil.matches(oldPassword, user.getPassword())) {
             log.info("更新用户密码失败，旧密码错误：{}", updatePasswordDTO);
-            throw new PasswordErrorException(LoginConstant.ERROR_PASSWORD);
+            throw new PasswordErrorException(AuthConstant.ERROR_PASSWORD);
         }
 
         //对新密码进行加密处理
         //先判断新密码是否合法:8–24 位，必须包含大小写字母，允许特殊字符
-        if (!newPassword.matches(LoginConstant.PASSWORD_REGEX)) {
+        if (!newPassword.matches(AuthConstant.PASSWORD_REGEX)) {
             log.info("更新用户密码失败，新密码不合法：{}", updatePasswordDTO);
-            throw new PasswordInvalidException(LoginConstant.INVALID_PASSWORD);
+            throw new PasswordInvalidException(AuthConstant.INVALID_PASSWORD);
         }
 
         //防止新密码与旧密码相同
         if (PasswordUtil.matches(newPassword, user.getPassword())) {
             log.info("更新用户密码失败，新密码与旧密码相同：{}", updatePasswordDTO);
-            throw new NewPasswordSameAsOldException(LoginConstant.NEW_PASSWORD_OLD_SAME);
+            throw new NewPasswordSameAsOldException(AuthConstant.NEW_PASSWORD_OLD_SAME);
         }
 
         //对新密码进行加密处理

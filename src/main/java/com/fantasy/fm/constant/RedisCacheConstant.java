@@ -9,4 +9,8 @@ public class RedisCacheConstant {
     public static final String USER_INFO_DATA = "user:info:data";
 
     public static final String KEY_MUSIC_LIST = "'musicList'";
+
+    public static final String EMAIL_CODE = "email:code:";
+    public static final String LOGIN_CAPTCHA = "login:captcha";
+    public static final String LOGIN_FAIL = "login:fail";
 }

@@ -1,6 +1,6 @@
 package com.fantasy.fm.constant;
 
-public class LoginConstant {
+public class AuthConstant {
     public static final String USER_ID = "userId";
     public static final String EMAIL = "email";
     public static final String USERNAME = "username";
@@ -19,4 +19,10 @@ public class LoginConstant {
     public static final String ERROR_PASSWORD = "密码错误!";
     public static final String LOGOUT_SUCCESS = "退出登录成功!";
     public static final String LOGIN_EXCEPTION = "登录遇到问题,请稍后再试!";
+    public static final String EMAIL_INVALID = "邮箱格式不正确";
+    public static final String CODE_SEND_FAIL = "验证码发送失败，请稍后重试";
+    public static final String NEED_CAPTCHA = "检测到异常登录，请输入验证码";
+    public static final String CODE_INVALID = "验证码错误或已失效";
+    public static final String INPUT_EMPTY = "邮箱和验证码不能为空";
+    public static final String CODE_WRONG = "验证码错误或失效";
 }

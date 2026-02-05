@@ -1,9 +1,10 @@
 package com.fantasy.fm.controller;
 
-import com.fantasy.fm.constant.LoginConstant;
+import com.fantasy.fm.constant.AuthConstant;
 import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.domain.dto.UpdatePasswordDTO;
 import com.fantasy.fm.domain.dto.UserLoginDTO;
+import com.fantasy.fm.domain.dto.UserRegisterDTO;
 import com.fantasy.fm.domain.entity.User;
 import com.fantasy.fm.domain.vo.UserInfoVO;
 import com.fantasy.fm.domain.vo.UserLoginVO;
@@ -40,7 +41,7 @@ public class UserController {
         // 程序执行到这里说明登录成功
         //构造JWT令牌的载荷
         HashMap<String, Object> claims = new HashMap<>();
-        claims.put(LoginConstant.USER_ID, user.getId());
+        claims.put(AuthConstant.USER_ID, user.getId());
         //登录成功生成JWT令牌
         String token = JwtUtil
                 .generateToken(
@@ -65,9 +66,9 @@ public class UserController {
      */
     @Operation(summary = "用户注册", description = "用户使用用户名和密码进行注册")
     @PostMapping("/register")
-    public Result<Void> register(@RequestBody UserLoginDTO userLoginDTO) {
-        log.info("用户注册：{}", userLoginDTO);
-        userService.register(userLoginDTO);
+    public Result<Void> register(@RequestBody UserRegisterDTO userRegisterDTO) {
+        log.info("用户注册：{}", userRegisterDTO);
+        userService.register(userRegisterDTO);
         return Result.success();
     }
 
@@ -107,6 +108,6 @@ public class UserController {
     @Operation(summary = "退出登录", description = "用户退出登录接口")
     @PostMapping("/logout")
     public Result<String> logout() {
-        return Result.success(LoginConstant.LOGOUT_SUCCESS);
+        return Result.success(AuthConstant.LOGOUT_SUCCESS);
     }
 }

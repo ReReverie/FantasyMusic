@@ -1,7 +1,7 @@
 package com.fantasy.fm.interceptor;
 
 import cn.hutool.core.util.StrUtil;
-import com.fantasy.fm.constant.LoginConstant;
+import com.fantasy.fm.constant.AuthConstant;
 import com.fantasy.fm.context.BaseContext;
 import com.fantasy.fm.properties.JwtProperties;
 import com.fantasy.fm.utils.JwtUtil;
@@ -66,7 +66,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
 
         // 3. 获取用户ID（防御式编程）
-        Object userIdObj = claims.get(LoginConstant.USER_ID);
+        Object userIdObj = claims.get(AuthConstant.USER_ID);
         if (userIdObj == null) {
             log.warn("JWT 中未包含用户ID");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
