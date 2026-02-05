@@ -162,10 +162,10 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
             if (isDownload) {
                 // 【下载模式】：调用新写的带文件名的方法，强制下载
                 String fileName = new URL(fileUrl).getPath().split("/" + SystemConstant.OSS_MUSIC_DIR)[1];
-                presignedUrl = ossUtil.generateDownloadPresignedUrl(objectName, fileName, 3600);
+                presignedUrl = ossUtil.generateDownloadPresignedUrl(objectName, fileName);
             } else {
                 // 【播放模式】：普通链接
-                presignedUrl = ossUtil.generatePresignedUrl(objectName, 3600);
+                presignedUrl = ossUtil.generatePresignedUrl(objectName);
             }
             return ResponseEntity.ok(presignedUrl.toString());
         } catch (MalformedURLException e) {

@@ -54,3 +54,4 @@ fm:
     bucket-name: ${fm.aliyunoss.bucket-name}
     access-key-id: ${fm.aliyunoss.access-key-id}
     access-key-secret: ${fm.aliyunoss.access-key-secret}
+    expire-time: ${fm.aliyunoss.expire-time}

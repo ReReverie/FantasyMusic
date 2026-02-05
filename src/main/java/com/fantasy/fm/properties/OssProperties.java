@@ -12,4 +12,5 @@ public class OssProperties {
     private String accessKeyId;
     private String accessKeySecret;
     private String bucketName;
+    private Long expireTime;
 }

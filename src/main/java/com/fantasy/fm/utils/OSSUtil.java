@@ -102,10 +102,10 @@ public class OSSUtil {
     /**
      * 生成预签名URL
      */
-    public URL generatePresignedUrl(String objectName, long expirationInMillis) {
+    public URL generatePresignedUrl(String objectName) {
         try {
             // 设置预签名URL过期时间，单位为毫秒。本示例以设置过期时间为1小时为例。
-            Date expiration = new Date(new Date().getTime() + expirationInMillis * 1000L);
+            Date expiration = new Date(new Date().getTime() + ossProperties.getExpireTime() * 1000L);
             // 生成以GET方法访问的预签名URL。本示例没有额外请求头，其他人可以直接通过浏览器访问相关内容。
             return client.generatePresignedUrl(ossProperties.getBucketName(), objectName, expiration);
         } catch (OSSException oe) {
@@ -128,10 +128,10 @@ public class OSSUtil {
     /**
      * 生成预签名URL
      */
-    public URL generateDownloadPresignedUrl(String objectName, String fileName, long expirationInMillis) {
+    public URL generateDownloadPresignedUrl(String objectName, String fileName) {
         try {
             // 1. 设置过期时间
-            Date expiration = new Date(System.currentTimeMillis() + expirationInMillis * 1000L);
+            Date expiration = new Date(System.currentTimeMillis() + ossProperties.getExpireTime() * 1000L);
             // 2. 创建请求对象
             GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(ossProperties.getBucketName(), objectName);
             request.setExpiration(expiration);
