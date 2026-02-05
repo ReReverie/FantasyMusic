@@ -6,7 +6,6 @@ import com.aliyun.oss.OSSClientBuilder;
 import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.GeneratePresignedUrlRequest;
 import com.aliyun.oss.model.PutObjectRequest;
-import com.aliyun.oss.model.PutObjectResult;
 import com.aliyun.oss.model.ResponseHeaderOverrides;
 import com.fantasy.fm.properties.OssProperties;
 import jakarta.annotation.PreDestroy;

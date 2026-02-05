@@ -5,7 +5,6 @@ import com.fantasy.fm.constant.MusicConstant;
 import com.fantasy.fm.enums.AudioFormatEnum;
 import com.fantasy.fm.enums.OperationPermission;
 import com.fantasy.fm.response.Result;
-import com.fantasy.fm.service.MusicService;
 import com.fantasy.fm.service.MusicManagerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

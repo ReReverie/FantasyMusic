@@ -5,7 +5,6 @@ import com.fantasy.fm.domain.dto.PageDTO;
 import com.fantasy.fm.domain.entity.Music;
 import com.fantasy.fm.domain.query.MusicPageQuery;
 import com.fantasy.fm.domain.vo.MusicVO;
-import org.springframework.core.io.Resource;
 import org.springframework.http.ResponseEntity;
 
 import java.io.File;
