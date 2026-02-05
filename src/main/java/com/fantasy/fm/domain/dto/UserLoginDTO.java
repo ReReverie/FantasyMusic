@@ -10,4 +10,6 @@ public class UserLoginDTO {
     private String username;
     @Schema(description = "密码", example = "securePassword123")
     private String password;
+    private String captchaCode;
+    private String captchaUuid;
 }

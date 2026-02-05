@@ -2,6 +2,7 @@ package com.fantasy.fm.handler;
 
 import com.fantasy.fm.exception.BaseException;
 import com.fantasy.fm.constant.MusicListConstant;
+import com.fantasy.fm.exception.CaptchaRequiredException;
 import com.fantasy.fm.response.Result;
 import com.fantasy.fm.service.MusicService;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,6 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public Result<Void> SqlDuplicateHandler(SQLIntegrityConstraintViolationException ex) {
-        log.error("异常信息：{}", ex.getMessage());
         //处理异常信息,获取音乐ID
         String musicIdStr = ex.getMessage()
                 .split(" ")[2]
@@ -45,5 +45,13 @@ public class GlobalExceptionHandler {
         String title = musicService.getById(musicId).getTitle();
         return Result.error(title + " " + MusicListConstant.MUSIC_ALREADY_IN_LIST);
         //return Result.error(MusicListConstant.MUSIC_ALREADY_IN_LIST);
+    }
+
+    /**
+     * 登录次数过多，需验证码异常
+     */
+    @ExceptionHandler(CaptchaRequiredException.class)
+    public Result<Void> captchaRequiredHandler(CaptchaRequiredException ex) {
+        return Result.error(423, ex.getMessage());
     }
 }

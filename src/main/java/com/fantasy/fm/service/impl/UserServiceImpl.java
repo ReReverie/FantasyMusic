@@ -11,6 +11,7 @@ import com.fantasy.fm.domain.entity.User;
 import com.fantasy.fm.domain.vo.UserInfoVO;
 import com.fantasy.fm.mapper.UserMapper;
 import com.fantasy.fm.service.UserService;
+import com.fantasy.fm.utils.RedisCacheUtil;
 import com.fantasy.fm.utils.security.PasswordUtil;
 import com.fantasy.fm.utils.security.RSADecryptor;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -28,10 +30,33 @@ import java.time.LocalDateTime;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     private final RSADecryptor rsaDecryptor;
+    private final RedisCacheUtil redisCacheUtil;
 
     @Override
     public User login(UserLoginDTO userLoginDTO) {
         String username = userLoginDTO.getUsername();
+        //构建redis的key
+        String redisKey = "login:fail" + "::" + username;
+        //获取登录失败次数
+        Integer failCount = redisCacheUtil.get(redisKey, Integer.class);
+        //如果failCount为空,表示用户第一次进行登录操作,将失败次数设置为1
+        if (failCount != null && failCount >= 3){
+            //如果到这表示失败次数过多,强制检查验证码
+            if (userLoginDTO.getCaptchaCode() == null || userLoginDTO.getCaptchaCode().isEmpty() || userLoginDTO.getCaptchaUuid() == null){
+                throw new CaptchaRequiredException("系统检测到异常登录，请输入验证码");
+            }
+            //校验验证码有效性
+            String redisCaptchaKey = "login:captcha" + "::" + userLoginDTO.getCaptchaUuid();
+            String realCaptchaKey = redisCacheUtil.get(redisCaptchaKey, String.class);
+            //如果验证码错误，抛出异常
+            if (realCaptchaKey == null || !realCaptchaKey.equalsIgnoreCase(userLoginDTO.getCaptchaCode())){
+                log.info("用户登录失败，验证码错误：{}", userLoginDTO);
+                throw new CaptchaErrorException("验证码错误或已失效");
+            }
+            //验证码校验通过, 删除缓存中的验证码
+            redisCacheUtil.delete(redisCaptchaKey);
+        }
+
         //根据用户名查询用户信息
         User user = this.lambdaQuery()
                 .eq(User::getUsername, username)
@@ -39,6 +64,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         if (user == null) {
             log.info("用户登录失败，用户未找到：{}", userLoginDTO);
+            //记录登录失败次数
+            incrementFailCount(redisKey);
             throw new UserNotFoundException(LoginConstant.USER_NOT_FOUND);
         }
 
@@ -48,10 +75,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //验证密码是否正确
         if (!PasswordUtil.matches(password, user.getPassword())) {
             log.info("用户登录失败，密码错误：{}", userLoginDTO);
+            //记录登录失败次数
+            incrementFailCount(redisKey);
             throw new PasswordErrorException(LoginConstant.ERROR_PASSWORD);
         }
 
+        //如果登录成功,删除失败缓存
+        //只有登录成功了，才把计数器清零，否则用户下次还得输验证码（直到过期）
+        redisCacheUtil.delete(redisKey);
+
         return user;
+    }
+
+    /**
+     * 记录登录失败次数
+     * @param redisKey redis的key
+     */
+    private void incrementFailCount(String redisKey) {
+        Integer count = redisCacheUtil.get(redisKey, Integer.class);
+        if (count == null){
+            count = 1;
+        } else {
+            count++;
+        }
+        redisCacheUtil.set(redisKey, count, 15L, TimeUnit.MINUTES); // 设置10分钟过期时间
     }
 
     @Override
