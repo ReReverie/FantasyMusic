@@ -16,5 +16,5 @@ public class MusicListTrack {
     private Long id;
     private Long musicListId; // 歌单ID
     private Long musicId;     // 音乐ID
-    private LocalDateTime createTime; // 加入歌单的时间
+    private LocalDateTime joinTime; // 加入歌单的时间
 }

@@ -35,6 +35,9 @@ import tools.jackson.core.type.TypeReference;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -74,7 +77,7 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
         MusicListTrack musicListTrack = MusicListTrack.builder()
                 .musicListId(dto.getMusicListId())
                 .musicId(dto.getMusicId())
-                .createTime(LocalDateTime.now())
+                .joinTime(LocalDateTime.now())
                 .build();
         // 往MusicListTrack表中插入记录
         musicListTrackMapper.insert(musicListTrack);
@@ -202,7 +205,7 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
             trackList.add(MusicListTrack.builder()
                     .musicId(musicId)
                     .musicListId(dto.getMusicListId())
-                    .createTime(LocalDateTime.now())
+                    .joinTime(LocalDateTime.now())
                     .build());
         }
         //最后批量插入
@@ -281,19 +284,33 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     private @NonNull List<Music> getMusicList(Long id) {
         List<MusicListTrack> musicListTracks = musicListTrackMapper.selectList(
                 new LambdaQueryWrapper<MusicListTrack>()
-                        .orderBy(true, true, MusicListTrack::getCreateTime) // 按创建时间升序
+                        .orderByDesc(MusicListTrack::getJoinTime) // 按创建时间降序
                         .eq(MusicListTrack::getMusicListId, id));
         //根据musicListTracks获取对应的MusicID获取音乐列表
         //先获取所有的MusicID
         List<Long> musicIds = musicListTracks.stream().map(MusicListTrack::getMusicId).toList();
+
         //如果musicIds为空,直接返回空列表
         if (musicIds.isEmpty()) {
             return List.of();
         }
-        //根据MusicID列表查询对应的音乐封装到List<Music>中,最后返回
-        return musicMapper.selectList(
+
+        //查Musics
+        List<Music> musics = musicMapper.selectList(
                 new LambdaQueryWrapper<Music>()
                         .in(Music::getId, musicIds));
+
+        //按musicIds的顺序（即 joinTime 降序）排序
+        Map<Long, Music> musicMap = musics
+                .stream()
+                .collect(Collectors.toMap(Music::getId, music -> music));
+
+
+        //根据MusicID列表查询对应的音乐封装到List<Music>中,最后返回
+        return musicIds.stream()
+                .map(musicMap::get)
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     /**
@@ -302,7 +319,7 @@ public class MusicListServiceImpl extends ServiceImpl<MusicListMapper, MusicList
     private @NonNull List<Music> getMusicList(MusicListDetailQuery query) {
         List<MusicListTrack> musicListTracks = musicListTrackMapper.selectList(
                 new LambdaQueryWrapper<MusicListTrack>()
-                        .orderBy(true, true, MusicListTrack::getCreateTime) // 按创建时间升序
+                        .orderBy(true, true, MusicListTrack::getJoinTime) // 按创建时间升序
                         .eq(MusicListTrack::getMusicListId, query.getMusicListId()));
         //根据musicListTracks获取对应的MusicID获取音乐列表
         //如果musicListTracks为空,直接返回空列表
