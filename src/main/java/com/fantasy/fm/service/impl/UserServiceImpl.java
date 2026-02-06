@@ -107,6 +107,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void register(UserRegisterDTO userRegisterDTO) {
+        //检查邮箱是否已经被注册过
+        Long count = this.lambdaQuery()
+                .eq(User::getEmail, userRegisterDTO.getEmail())
+                .count();
+
+        if (count > 0) {
+            log.info("用户注册失败，邮箱已被注册：{}", userRegisterDTO);
+            throw new EmailAlreadyRegisteredException(AuthConstant.EMAIL_ALREADY_REGISTERED);
+        }
+
         String username = userRegisterDTO.getUsername();
         String password = getDecryptPassword(userRegisterDTO.getPassword());
 
