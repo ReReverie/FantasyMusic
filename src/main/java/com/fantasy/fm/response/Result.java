@@ -22,6 +22,10 @@ public class Result<T> {
         return new Result<>(1, "success", data);
     }
 
+    public static Result<Void> success(Integer code, String message) {
+        return new Result<>(code, message, null);
+    }
+
     public static Result<Void> error() {
         return new Result<>(0, "error", null);
     }

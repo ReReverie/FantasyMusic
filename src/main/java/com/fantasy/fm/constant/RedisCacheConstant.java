@@ -13,4 +13,5 @@ public class RedisCacheConstant {
     public static final String EMAIL_CODE = "email:code:";
     public static final String LOGIN_CAPTCHA = "login:captcha";
     public static final String LOGIN_FAIL = "login:fail";
+    public static final String RESET_EMAIL_CODE = "login:email:reset";
 }

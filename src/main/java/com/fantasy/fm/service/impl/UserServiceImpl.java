@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fantasy.fm.constant.RedisCacheConstant;
 import com.fantasy.fm.context.BaseContext;
+import com.fantasy.fm.domain.dto.ResetPasswordDTO;
 import com.fantasy.fm.domain.dto.UserRegisterDTO;
 import com.fantasy.fm.exception.*;
 import com.fantasy.fm.constant.AuthConstant;
@@ -243,5 +244,43 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setPassword(encodeNewPassword);
         user.setUpdateTime(LocalDateTime.now());
         this.updateById(user);
+    }
+
+    @Override
+    public void resetPassword(ResetPasswordDTO resetPasswordDTO) {
+        //获取用户信息
+        String account = resetPasswordDTO.getAccount();
+        User entity = this.lambdaQuery()
+                .eq(User::getUsername, account)
+                .or()
+                .eq(User::getEmail, account)
+                .one();
+        //如果没找到用户，抛出校验失败异常
+        if (entity == null) {
+            throw new UserValidationException(AuthConstant.USER_VALIDATION_FAILED);
+        }
+        //从Redis中获取验证码
+        String redisKey = RedisCacheConstant.RESET_EMAIL_CODE + "::" + entity.getId();
+        String realCode = redisCacheUtil.get(redisKey, String.class);
+
+        //判断验证码是否正确或失效
+        if (realCode == null || !realCode.equals(resetPasswordDTO.getCode())) {
+            throw new EmailCodeErrorException(AuthConstant.CODE_WRONG);
+        }
+
+        //对新密码进行加密处理
+        String decryptPassword = getDecryptPassword(resetPasswordDTO.getNewPassword()); //解密密码
+
+        //先判断新密码是否合法:8–24 位，必须包含大小写字母，允许特殊字符
+        if (!decryptPassword.matches(AuthConstant.PASSWORD_REGEX)) {
+            throw new PasswordInvalidException(AuthConstant.INVALID_PASSWORD);
+        }
+        //加密成数据库密码
+        String encodeNewPassword = PasswordUtil.encodePassword(decryptPassword);
+
+        //更新用户密码
+        entity.setPassword(encodeNewPassword);
+        entity.setUpdateTime(LocalDateTime.now());
+        this.updateById(entity);
     }
 }

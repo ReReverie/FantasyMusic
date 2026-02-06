@@ -1,6 +1,7 @@
 package com.fantasy.fm.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.fantasy.fm.domain.dto.ResetPasswordDTO;
 import com.fantasy.fm.domain.dto.UpdatePasswordDTO;
 import com.fantasy.fm.domain.dto.UserLoginDTO;
 import com.fantasy.fm.domain.dto.UserRegisterDTO;
@@ -39,4 +40,10 @@ public interface UserService extends IService<User> {
      * @param updatePasswordDTO 更新密码传输对象
      */
     void updatePassword(UpdatePasswordDTO updatePasswordDTO);
+
+    /**
+     * 重置用户密码
+     * @param resetPasswordDTO 重置密码传输对象
+     */
+    void resetPassword(ResetPasswordDTO resetPasswordDTO);
 }

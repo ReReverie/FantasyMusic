@@ -22,6 +22,9 @@ public class AuthConstant {
     public static final String NEED_CAPTCHA = "检测到异常登录，请输入验证码";
     public static final String CODE_INVALID = "验证码错误或已失效";
     public static final String INPUT_EMPTY = "邮箱和验证码不能为空";
-    public static final String CODE_WRONG = "验证码错误或失效";
+    public static final String CODE_WRONG = "验证码错误或失效,请尝试重新获取";
     public static final String EMAIL_NOT_ALLOW_EMPTY = "邮箱不能为空,否则无法找回账号";
+    public static final String FAKE_CODE_SEND_MESSAGE = "验证码已发送!";
+    public static final String REAL_CODE_SEND_MESSAGE = "验证码发送成功，请注意查收！";
+    public static final String USER_VALIDATION_FAILED = "用户校验失败!";
 }

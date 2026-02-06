@@ -7,13 +7,16 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.fantasy.fm.constant.AuthConstant;
 import com.fantasy.fm.constant.RedisCacheConstant;
+import com.fantasy.fm.domain.dto.ResetPasswordDTO;
+import com.fantasy.fm.domain.entity.User;
 import com.fantasy.fm.properties.MailProperties;
 import com.fantasy.fm.response.Result;
+import com.fantasy.fm.service.UserService;
 import com.fantasy.fm.utils.RedisCacheUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +31,7 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class AuthController {
 
+    private final UserService userService;
     private final RedisCacheUtil redisCacheUtil;
     private final JavaMailSender javaMailSender;
     private final MailProperties mailProperties;
@@ -80,36 +84,82 @@ public class AuthController {
         redisCacheUtil.set(redisKey, code, 5L, TimeUnit.MINUTES);
 
         //发送验证码到用户邮箱
-        Result<Void> error = sendCode2Email(email, code);
+        Result<Void> error = sendCode2Email(email, code, "注册");
         if (error != null) return error;
 
         return Result.success();
     }
 
     /**
-     * 发送验证码到邮箱
+     * 发送重置验证码接口
+     */
+    @Operation(summary = "发送重置验证码", description = "向用户邮箱发送重置密码的验证码")
+    @PostMapping("/password/code")
+    public Result<Void> sendResetEmailCode(@RequestParam String account) {
+        //account 既可以是用户名，也可以是邮箱
+        //查询用户是否存在
+        User entity = userService.lambdaQuery()
+                .eq(User::getUsername, account)
+                .or()
+                .eq(User::getEmail, account)
+                .one();
+        if (entity == null) {
+            //假信息,防止用户枚举攻击
+            return Result.success(200, AuthConstant.FAKE_CODE_SEND_MESSAGE);
+        }
+
+        //生成6位数字验证码
+        String code = RandomUtil.randomNumbers(6);
+
+        //将验证码存入Redis, 有效期5分钟
+        String redisKey = RedisCacheConstant.RESET_EMAIL_CODE + "::" + entity.getId();
+        redisCacheUtil.set(redisKey, code, 5L, TimeUnit.MINUTES);
+
+        //发送验证码到用户邮箱
+        return sendCode2Email(entity.getEmail(), code, "找回");
+    }
+
+    /**
+     * 重置密码接口
+     */
+    @Operation(summary = "重置密码接口", description = "通过邮箱验证码重置用户密码")
+    @PostMapping("/password/reset")
+    public Result<Void> resetPassword(@RequestBody ResetPasswordDTO resetPasswordDTO) {
+        userService.resetPassword(resetPasswordDTO);
+        return Result.success();
+    }
+
+
+    /**
+     * 发送验证码到邮箱方法
      *
      * @param email 用户邮箱
      * @param code  验证码
      * @return 发送结果
      */
-    private @Nullable Result<Void> sendCode2Email(String email, String code) {
+    private @NonNull Result<Void> sendCode2Email(String email, String code, String messageType) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(mailProperties.getFrom());
             message.setTo(email);
             message.setSubject(mailProperties.getSubjectPrefix());
-            message.setText(buildVerificationText(code));
+            message.setText(buildVerificationText(code, messageType));
             javaMailSender.send(message);
+            return Result.success(200, AuthConstant.REAL_CODE_SEND_MESSAGE);
         } catch (Exception e) {
             log.error("邮件发送失败", e);
             return Result.error(AuthConstant.CODE_SEND_FAIL);
         }
-        return null;
     }
 
-    private String buildVerificationText(String code) {
-        return String.format("您的注册验证码是：%s，有效期%d分钟。如非本人操作，请忽略。",
-                code, mailProperties.getCodeExpireMinutes());
+    private String buildVerificationText(String code, String messageType) {
+        String warningText = switch (messageType) {
+            case "注册" -> "如非本人操作，请忽略此邮件。";
+            case "找回" -> "如非本人操作，请立即检查账号安全或修改密码。";
+            default -> "如非本人操作，请忽略。";
+        };
+
+        return String.format("您的%s验证码是：%s，有效期%d分钟。%s", messageType,
+                code, mailProperties.getCodeExpireMinutes(), warningText);
     }
 }
