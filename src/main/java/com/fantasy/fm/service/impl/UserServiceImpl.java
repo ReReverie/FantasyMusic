@@ -218,11 +218,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         //获取当前用户信息
         User user = this.getById(userId);
 
+        //解密旧密码
+        oldPassword = getDecryptPassword(oldPassword);
+
         //验证旧密码是否正确
         if (!PasswordUtil.matches(oldPassword, user.getPassword())) {
             log.info("更新用户密码失败，旧密码错误：{}", updatePasswordDTO);
             throw new PasswordErrorException(AuthConstant.ERROR_PASSWORD);
         }
+
+        //解密新密码
+        newPassword = getDecryptPassword(newPassword);
 
         //对新密码进行加密处理
         //先判断新密码是否合法:8–24 位，必须包含大小写字母，允许特殊字符
