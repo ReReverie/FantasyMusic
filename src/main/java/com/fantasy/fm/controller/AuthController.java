@@ -35,8 +35,6 @@ public class AuthController {
     private final RedisCacheUtil redisCacheUtil;
     private final JavaMailSender javaMailSender;
     private final MailProperties mailProperties;
-    //频率限制校验, 每分钟最多发送一次
-    private String rateLimitKey = RedisCacheConstant.RATE_LIMIT_KEY + "::";
 
     /**
      * 生成验证码接口
@@ -73,7 +71,8 @@ public class AuthController {
     @Operation(summary = "发送验证码", description = "向用户邮箱发送验证码")
     @PostMapping("/email-code")
     public Result<Void> sendEmailCode(@RequestParam String email) {
-        rateLimitKey = rateLimitKey + email;
+        //频率限制校验, 每分钟最多发送一次
+        String rateLimitKey = RedisCacheConstant.RATE_LIMIT_KEY + "::" + email;
         if (redisCacheUtil.hasKey(rateLimitKey)) {
             return Result.error(AuthConstant.CODE_SEND_FREQUENTLY);
         }
@@ -91,7 +90,7 @@ public class AuthController {
         redisCacheUtil.set(redisKey, code, 5L, TimeUnit.MINUTES);
 
         //发送验证码到用户邮箱
-        return sendCode2Email(email, code, "注册");
+        return sendCode2Email(email, code, "注册", rateLimitKey);
     }
 
     /**
@@ -100,8 +99,8 @@ public class AuthController {
     @Operation(summary = "发送重置验证码", description = "向用户邮箱发送重置密码的验证码")
     @PostMapping("/password/code")
     public Result<Void> sendResetEmailCode(@RequestParam String account) {
-        //account 既可以是用户名，也可以是邮箱
-        rateLimitKey = rateLimitKey + account;
+        //频率限制校验, 每分钟最多发送一次
+        String rateLimitKey = RedisCacheConstant.RATE_LIMIT_KEY + "::" + account;
         if (redisCacheUtil.hasKey(rateLimitKey)) {
             return Result.error(AuthConstant.CODE_SEND_FREQUENTLY);
         }
@@ -124,7 +123,7 @@ public class AuthController {
         redisCacheUtil.set(redisKey, code, 5L, TimeUnit.MINUTES);
 
         //发送验证码到用户邮箱
-        return sendCode2Email(entity.getEmail(), code, "找回");
+        return sendCode2Email(entity.getEmail(), code, "找回", rateLimitKey);
     }
 
     /**
@@ -145,7 +144,7 @@ public class AuthController {
      * @param code  验证码
      * @return 发送结果
      */
-    private @NonNull Result<Void> sendCode2Email(String email, String code, String messageType) {
+    private @NonNull Result<Void> sendCode2Email(String email, String code, String messageType, String rateLimitKey) {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(mailProperties.getFrom());
@@ -154,6 +153,7 @@ public class AuthController {
             message.setText(buildVerificationText(code, messageType));
             javaMailSender.send(message);
             //设置频率限制标记,1分钟内不可重复发送
+            //频率限制校验, 每分钟最多发送一次
             redisCacheUtil.set(rateLimitKey, "1", 1L, TimeUnit.MINUTES);
             return Result.success(200, AuthConstant.REAL_CODE_SEND_MESSAGE);
         } catch (Exception e) {
