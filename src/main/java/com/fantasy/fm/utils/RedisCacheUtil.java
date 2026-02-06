@@ -58,4 +58,8 @@ public class RedisCacheUtil {
     public void delete(String key) {
         redisTemplate.delete(key);
     }
+
+    public boolean hasKey(String key) {
+        return redisTemplate.opsForValue().get(key) != null;
+    }
 }

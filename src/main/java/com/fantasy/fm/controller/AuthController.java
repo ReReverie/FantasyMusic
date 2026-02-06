@@ -35,6 +35,8 @@ public class AuthController {
     private final RedisCacheUtil redisCacheUtil;
     private final JavaMailSender javaMailSender;
     private final MailProperties mailProperties;
+    //频率限制校验, 每分钟最多发送一次
+    private String rateLimitKey = RedisCacheConstant.RATE_LIMIT_KEY + "::";
 
     /**
      * 生成验证码接口
@@ -71,6 +73,11 @@ public class AuthController {
     @Operation(summary = "发送验证码", description = "向用户邮箱发送验证码")
     @PostMapping("/email-code")
     public Result<Void> sendEmailCode(@RequestParam String email) {
+        rateLimitKey = rateLimitKey + email;
+        if (redisCacheUtil.hasKey(rateLimitKey)) {
+            return Result.error(AuthConstant.CODE_SEND_FREQUENTLY);
+        }
+
         //校验邮箱格式是否合法
         if (!Validator.isEmail(email)) {
             return Result.error(AuthConstant.EMAIL_INVALID);
@@ -84,10 +91,7 @@ public class AuthController {
         redisCacheUtil.set(redisKey, code, 5L, TimeUnit.MINUTES);
 
         //发送验证码到用户邮箱
-        Result<Void> error = sendCode2Email(email, code, "注册");
-        if (error != null) return error;
-
-        return Result.success();
+        return sendCode2Email(email, code, "注册");
     }
 
     /**
@@ -97,6 +101,10 @@ public class AuthController {
     @PostMapping("/password/code")
     public Result<Void> sendResetEmailCode(@RequestParam String account) {
         //account 既可以是用户名，也可以是邮箱
+        rateLimitKey = rateLimitKey + account;
+        if (redisCacheUtil.hasKey(rateLimitKey)) {
+            return Result.error(AuthConstant.CODE_SEND_FREQUENTLY);
+        }
         //查询用户是否存在
         User entity = userService.lambdaQuery()
                 .eq(User::getUsername, account)
@@ -145,6 +153,8 @@ public class AuthController {
             message.setSubject(mailProperties.getSubjectPrefix());
             message.setText(buildVerificationText(code, messageType));
             javaMailSender.send(message);
+            //设置频率限制标记,1分钟内不可重复发送
+            redisCacheUtil.set(rateLimitKey, "1", 1L, TimeUnit.MINUTES);
             return Result.success(200, AuthConstant.REAL_CODE_SEND_MESSAGE);
         } catch (Exception e) {
             log.error("邮件发送失败", e);

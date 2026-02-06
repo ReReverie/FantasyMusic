@@ -28,4 +28,5 @@ public class AuthConstant {
     public static final String REAL_CODE_SEND_MESSAGE = "验证码发送成功，请注意查收！";
     public static final String USER_VALIDATION_FAILED = "用户校验失败!";
     public static final String EMAIL_ALREADY_REGISTERED = "该邮箱已被注册";
+    public static final String CODE_SEND_FREQUENTLY = "验证码发送过于频繁，请稍后再试";
 }
