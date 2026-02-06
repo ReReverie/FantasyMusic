@@ -7,6 +7,9 @@ public class AuthConstant {
     public static final String USERNAME_REGEX = "^(?!\\d+$).{3,}$";
     public static final String PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z]).{8,24}$";
 
+    // 常量定义
+    public static final String IP_LIMIT_PREFIX = "rate_limit:ip:";
+    public static final int MAX_SEND_PER_DAY = 15; // 每天限制15次
 
     public static final String USER_NOT_FOUND = "用户不存在!";
     public static final String USER_ALREADY_EXISTS = "用户已存在!";
@@ -29,4 +32,5 @@ public class AuthConstant {
     public static final String USER_VALIDATION_FAILED = "用户校验失败!";
     public static final String EMAIL_ALREADY_REGISTERED = "该邮箱已被注册";
     public static final String CODE_SEND_FREQUENTLY = "验证码发送过于频繁，请稍后再试";
+    public static final String TODAY_CODE_SEND_FREQUENTLY = "今日验证码发送次数已达上限，请明天再试";
 }

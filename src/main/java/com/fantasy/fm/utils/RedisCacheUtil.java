@@ -59,7 +59,24 @@ public class RedisCacheUtil {
         redisTemplate.delete(key);
     }
 
+    /**
+     * 判断缓存是否存在
+     */
     public boolean hasKey(String key) {
         return redisTemplate.opsForValue().get(key) != null;
+    }
+
+    /**
+     * 如果不存在则存储值,如果存在则进行自增
+     */
+    public long increment(String ipKey, int i) {
+        return redisTemplate.opsForValue().increment(ipKey, i);
+    }
+
+    /**
+     * 设置过期时间
+     */
+    public void expire(String ipKey, long l, TimeUnit timeUnit) {
+        redisTemplate.expire(ipKey, l, timeUnit);
     }
 }

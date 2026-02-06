@@ -12,8 +12,10 @@ import com.fantasy.fm.domain.entity.User;
 import com.fantasy.fm.properties.MailProperties;
 import com.fantasy.fm.response.Result;
 import com.fantasy.fm.service.UserService;
+import com.fantasy.fm.utils.IPUtil;
 import com.fantasy.fm.utils.RedisCacheUtil;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
@@ -35,6 +37,7 @@ public class AuthController {
     private final RedisCacheUtil redisCacheUtil;
     private final JavaMailSender javaMailSender;
     private final MailProperties mailProperties;
+    private final HttpServletRequest request;
 
     /**
      * 生成验证码接口
@@ -71,6 +74,11 @@ public class AuthController {
     @Operation(summary = "发送验证码", description = "向用户邮箱发送验证码")
     @PostMapping("/email-code")
     public Result<Void> sendEmailCode(@RequestParam String email) {
+        //IP限流检查
+        if (checkIpLimit()) {
+            return Result.error(AuthConstant.TODAY_CODE_SEND_FREQUENTLY);
+        }
+
         //频率限制校验, 每分钟最多发送一次
         String rateLimitKey = RedisCacheConstant.RATE_LIMIT_KEY + "::" + email;
         if (redisCacheUtil.hasKey(rateLimitKey)) {
@@ -90,7 +98,14 @@ public class AuthController {
         redisCacheUtil.set(redisKey, code, 5L, TimeUnit.MINUTES);
 
         //发送验证码到用户邮箱
-        return sendCode2Email(email, code, "注册", rateLimitKey);
+        Result<Void> result = sendCode2Email(email, code, "注册", rateLimitKey);
+
+        // 4. 如果发送成功，增加 IP 计数
+        if (result.getCode() == 200) {
+            incrementIpCount();
+        }
+
+        return result;
     }
 
     /**
@@ -99,6 +114,10 @@ public class AuthController {
     @Operation(summary = "发送重置验证码", description = "向用户邮箱发送重置密码的验证码")
     @PostMapping("/password/code")
     public Result<Void> sendResetEmailCode(@RequestParam String account) {
+        //IP限流检查
+        if (checkIpLimit()) {
+            return Result.error(AuthConstant.TODAY_CODE_SEND_FREQUENTLY);
+        }
         //频率限制校验, 每分钟最多发送一次
         String rateLimitKey = RedisCacheConstant.RATE_LIMIT_KEY + "::" + account;
         if (redisCacheUtil.hasKey(rateLimitKey)) {
@@ -123,7 +142,14 @@ public class AuthController {
         redisCacheUtil.set(redisKey, code, 5L, TimeUnit.MINUTES);
 
         //发送验证码到用户邮箱
-        return sendCode2Email(entity.getEmail(), code, "找回", rateLimitKey);
+        Result<Void> result = sendCode2Email(entity.getEmail(), code, "找回", rateLimitKey);
+
+        // 4. 如果发送成功，增加 IP 计数
+        if (result.getCode() == 200) {
+            incrementIpCount();
+        }
+
+        return result;
     }
 
     /**
@@ -171,5 +197,38 @@ public class AuthController {
 
         return String.format("您的%s验证码是：%s，有效期%d分钟。%s", messageType,
                 code, mailProperties.getCodeExpireMinutes(), warningText);
+    }
+
+    /**
+     * 检查IP限流
+     *
+     * @return true 表示被限流（禁止发送），false 表示通过
+     */
+    private boolean checkIpLimit() {
+        String ip = IPUtil.getClientIp(request);
+        String ipKey = AuthConstant.IP_LIMIT_PREFIX + ip;
+
+        // 获取当前计数值
+        Integer count = redisCacheUtil.get(ipKey, Integer.class);
+
+        return count != null && count >= AuthConstant.MAX_SEND_PER_DAY; // 超过限制
+    }
+
+    /**
+     * 增加IP计数
+     * 只有在邮件发送成功后才调用
+     */
+    private void incrementIpCount() {
+        String ip = IPUtil.getClientIp(request);
+        String ipKey = AuthConstant.IP_LIMIT_PREFIX + ip;
+
+        // 计数 +1
+        // 注意：如果 key 不存在，redis 会自动创建并置为 1
+        long newCount = redisCacheUtil.increment(ipKey, 1);
+
+        // 如果是第一次计数（newCount == 1），则设置过期时间为 24 小时
+        if (newCount == 1) {
+            redisCacheUtil.expire(ipKey, 1L, TimeUnit.DAYS);
+        }
     }
 }
