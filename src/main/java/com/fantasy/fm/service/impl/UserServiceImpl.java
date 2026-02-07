@@ -37,9 +37,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public User login(UserLoginDTO userLoginDTO) {
-        String username = userLoginDTO.getUsername();
+        String account = userLoginDTO.getAccount();
         //构建redis的key
-        String redisKey = RedisCacheConstant.LOGIN_FAIL + "::" + username;
+        String redisKey = RedisCacheConstant.LOGIN_FAIL + "::" + account;
         //获取登录失败次数
         Integer failCount = redisCacheUtil.get(redisKey, Integer.class);
         //如果failCount为空,表示用户第一次进行登录操作,将失败次数设置为1
@@ -62,7 +62,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         //根据用户名查询用户信息
         User user = this.lambdaQuery()
-                .eq(User::getUsername, username)
+                .eq(User::getUsername, account)
+                .or()
+                .eq(User::getEmail, account)
                 .one();
 
         if (user == null) {

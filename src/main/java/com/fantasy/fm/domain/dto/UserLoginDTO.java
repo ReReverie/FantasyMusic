@@ -6,8 +6,8 @@ import lombok.Data;
 @Data
 @Schema(description = "用户登录DTO")
 public class UserLoginDTO {
-    @Schema(description = "用户名", example = "john_doe")
-    private String username;
+    @Schema(description = "用户名或者邮箱", example = "john_doe 或 邮箱")
+    private String account;
     @Schema(description = "密码", example = "securePassword123")
     private String password;
     @Schema(description = "验证码", example = "a1b2")

@@ -9,7 +9,7 @@ public class AuthConstant {
 
     // 常量定义
     public static final String IP_LIMIT_PREFIX = "rate_limit:ip:";
-    public static final int MAX_SEND_PER_DAY = 15; // 每天限制15次
+    public static final int MAX_SEND_PER_DAY = 10; // 每天限制10次
 
     public static final String USER_NOT_FOUND = "用户不存在!";
     public static final String USER_ALREADY_EXISTS = "用户已存在!";
