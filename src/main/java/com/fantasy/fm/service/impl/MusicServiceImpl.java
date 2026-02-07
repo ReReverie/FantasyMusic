@@ -13,6 +13,7 @@ import com.fantasy.fm.domain.dto.PageDTO;
 import com.fantasy.fm.domain.entity.MusicListTrack;
 import com.fantasy.fm.domain.query.MusicPageQuery;
 import com.fantasy.fm.domain.vo.MusicVO;
+import com.fantasy.fm.exception.MusicFileUploadException;
 import com.fantasy.fm.mapper.MusicListTrackMapper;
 import com.fantasy.fm.mapper.MusicMapper;
 import com.fantasy.fm.mapper.MusicManagerMapper;
@@ -84,12 +85,16 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
                     .releaseYear(StrUtil.isNotBlank(tag.getFirst(FieldKey.YEAR)) ? tag.getFirst(FieldKey.YEAR) : MusicConstant.UNKNOWN_RELEASE_YEAR)
                     .coverUrl(getCoverUrl(tag, musicFile))
                     .build();
-            //保存音乐基本信息到数据库
-            musicMapper.insert(musicInfo);
-            musicId = musicInfo.getId();
         } catch (Exception e) {
+            //如果抛出任何异常后,删除上传到OSS的文件并,不再继续执行,直接返回
             log.error("读取音乐文件元数据失败: ", e);
+            //解析失败时，删除已上传的 OSS 文件
+            deleteOssFileByUrl(ossUrl);
+            return;
         }
+        //保存音乐基本信息到数据库
+        musicMapper.insert(musicInfo);
+        musicId = musicInfo.getId();
         //保存音乐文件信息到数据库
         String originalName = musicFile.getName().split("_")[2];
         log.info("文件名: {}", originalName);
@@ -105,6 +110,24 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
                 .fileHash(fileHash)
                 .build();
         musicManagerMapper.insert(mfi);
+    }
+
+    /**
+     * 根据OSS URL删除文件
+     *
+     * @param ossUrl OSS文件的URL
+     */
+    private void deleteOssFileByUrl(String ossUrl) {
+        String objectName = null;
+        try {
+            URL url = new URL(ossUrl);
+            objectName = url.getPath().substring(1); // 对象名:music/Kastra  - Fool For You.mp3
+            ossUtil.delete(objectName);
+            log.info("已删除出现问题的OSS上的文件，URL: {}, 对象名: {}", ossUrl, objectName);
+            throw new MusicFileUploadException(SystemConstant.MUSIC_UPLOAD_FAILURE + objectName.split("/")[1]);
+        } catch (MalformedURLException e) {
+            log.error("urlPath提取失败!", e);
+        }
     }
 
     /**
