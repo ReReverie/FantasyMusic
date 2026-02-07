@@ -1,3 +1,5 @@
+server:
+  port: ${server.port:8080}
 spring:
   application:
     name: FantasyMusic
@@ -14,16 +16,24 @@ spring:
       database: ${spring.data.redis.database}
   mail:
     host: ${spring.mail.host}
+    port: ${spring.mail.port:25}
     username: ${spring.mail.username}
     password: ${spring.mail.password}
     default-encoding: UTF-8
+    protocol: smtps  # <--- 显式指定协议为 smtps
     properties:
       mail:
         smtp:
           auth: true
           starttls:
-            enable: true
-            required: true
+            enable: false  # <--- 关闭 starttls (465端口不需要这个)
+            required: false
+          ssl:
+            enable: true   # <--- 开启 SSL
+          socketFactory: # <--- 指定 SSL Socket 工厂 (关键!)
+            port: 465
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
   profiles:
     active: prod
   servlet:
@@ -55,9 +65,10 @@ logging:
       clean-history-on-start: false
 springdoc:
   api-docs:
-    enabled: true
+    enabled: ${springdoc.api-docs.enabled}
     path: /v3/api-docs
   swagger-ui:
+    enabled: ${springdoc.swagger-ui.enabled}
     path: /swagger-ui.html
     tags-sorter: alpha          # 标签按字母排序（支持中文拼音）
     operations-sorter: alpha    # 接口按字母排序
