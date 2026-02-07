@@ -24,7 +24,6 @@ import com.fantasy.fm.utils.OSSUtil;
 import com.fantasy.fm.utils.RedisCacheUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
@@ -73,7 +72,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         //获取音乐元数据信息
         AudioFile audioFile;
         Music musicInfo;
-        Long musicId = null;
+        Long musicId;
         try {
             audioFile = AudioFileIO.read(musicFile);
             Tag tag = audioFile.getTag();
@@ -119,7 +118,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
      * @param ossUrl OSS文件的URL
      */
     private void deleteOssFileByUrl(String ossUrl) {
-        String objectName = null;
+        String objectName;
         try {
             URL url = new URL(ossUrl);
             objectName = url.getPath().substring(1); // 对象名:music/Kastra  - Fool For You.mp3
