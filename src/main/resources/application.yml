@@ -43,16 +43,16 @@ mybatis-plus:
 logging:
   level:
     com.fantasy: debug
-    file:
-      name: logs/fantasy-music.log    # 相对路径，基于工作目录（JAR 所在目录）
-    pattern:
-      file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
-    logback:
-      rollingpolicy:
-        max-file-size: 10MB           # 单个日志文件最大大小
-        max-history: 30               # 保留 30 天的日志
-        total-size-cap: 1GB           # 日志总大小上限
-        clean-history-on-start: false
+  file:
+    name: logs/fantasy-music.log    # 相对路径，基于工作目录（JAR 所在目录）
+  pattern:
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n"
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB           # 单个日志文件最大大小
+      max-history: 30               # 保留 30 天的日志
+      total-size-cap: 1GB           # 日志总大小上限
+      clean-history-on-start: false
 springdoc:
   api-docs:
     enabled: true
