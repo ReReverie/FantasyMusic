@@ -1,0 +1,20 @@
+package com.fantasy.fm.pojo.domain.entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Builder;
+import lombok.Data;
+
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+@TableName("music_list_track")
+public class MusicListTrack {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+    private Long musicListId; // 歌单ID
+    private Long musicId;     // 音乐ID
+    private LocalDateTime joinTime; // 加入歌单的时间
+}

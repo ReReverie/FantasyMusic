@@ -1,0 +1,17 @@
+dependencies {
+    api project(':fm-pojo')
+
+    implementation 'org.springframework.boot:spring-boot-starter-web' // Spring Web
+    implementation "com.baomidou:mybatis-plus-spring-boot4-starter:${mybatisPlusVersion}"  // MyBatis-Plus
+    implementation "cn.hutool:hutool-all:${hutoolVersion}" // Hutool工具库
+    implementation 'org.springframework.security:spring-security-crypto' // 密码加密
+    // Spring Cache和Redis
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    implementation "com.aliyun.oss:aliyun-sdk-oss:${aliyunOssVersion}"
+    // Source: https://mvnrepository.com/artifact/net.jthink/jaudiotagger
+    implementation("net.jthink:jaudiotagger:${jaudiotaggerVersion}")
+
+    runtimeOnly 'com.mysql:mysql-connector-j'
+}
