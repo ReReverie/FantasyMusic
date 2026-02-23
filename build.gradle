@@ -41,6 +41,7 @@ subprojects {
 
     tasks.withType(JavaCompile).configureEach {
         options.encoding = "UTF-8"
+        options.compilerArgs.add("-parameters") // 强制编译器保留原始参数名，SpEL就能正确解析自定义参数名
     }
 
     dependencies {
