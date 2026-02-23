@@ -49,8 +49,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://localhost:8080",      // 本地开发
                         "http://localhost:5173",      // 前端开发服务器
                         "http://localhost:80",      // nginx
-                        "http://localhost:443",      // nginx
-                        "https://music.pixmc.top"    // 生产域名
+                        "http://localhost:443"/*,      // nginx
+                        "https://music.pixmc.top"    // 生产域名*/
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*");
