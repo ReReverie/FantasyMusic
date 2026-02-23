@@ -42,3 +42,6 @@ out/
 /jmeter/
 /application-prod.yml
 /logs/
+
+### Docker ENV ###
+docker-compose.yml
