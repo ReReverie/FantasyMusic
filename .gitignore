@@ -45,3 +45,10 @@ out/
 
 ### Docker ENV ###
 docker-compose.yml
+
+
+# Test resources
+/fm-pojo/src/test/
+/fm-common/src/test/
+/fm-service/src/test/
+/fm-web/src/test/

@@ -1,65 +1,63 @@
+import org.springframework.boot.gradle.plugin.SpringBootPlugin
+
 plugins {
-    id 'java'
-    id 'org.springframework.boot' version '4.0.2'
-    id 'io.spring.dependency-management' version '1.1.7'
+    id "java"
+    id "org.springframework.boot" version "4.0.2" apply false
+    id "io.spring.dependency-management" version "1.1.7" apply false
 }
 
-group = 'com.fantasy'
-version = '0.0.1-SNAPSHOT'
-description = 'FantasyMusic'
+allprojects {
+    group = "com.fantasy"
+    version = "0.0.1-SNAPSHOT"
+    description = "FantasyMusic"
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+    repositories { mavenCentral() }
+
+    ext {
+        mybatisPlusVersion = "3.5.15"
+        hutoolVersion = "5.8.43"
+        jwtVersion = "0.13.0"
+        aliyunOssVersion = "3.18.5"
+        jaudiotaggerVersion = "3.0.1"
+        springDocVersion = "3.0.0"
     }
 }
 
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+subprojects {
+    apply plugin: "java-library"
+    apply plugin: "io.spring.dependency-management"
+
+    //导入 Spring Boot BOM管理依赖版本
+    dependencyManagement {
+        imports {
+            mavenBom SpringBootPlugin.BOM_COORDINATES
+            mavenBom "com.baomidou:mybatis-plus-bom:${mybatisPlusVersion}"
+        }
     }
-}
 
-repositories {
-    mavenCentral()
-}
-
-dependencyManagement {
-    imports {
-        mavenBom "com.baomidou:mybatis-plus-bom:3.5.15"
+    java {
+        toolchain { languageVersion = JavaLanguageVersion.of(17) }
     }
-}
 
-dependencies {
-    implementation 'com.baomidou:mybatis-plus-spring-boot4-starter:3.5.15'
-    implementation("com.baomidou:mybatis-plus-jsqlparser")
-    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    implementation 'org.springframework.security:spring-security-crypto'
-    implementation 'org.springframework.boot:spring-boot-starter-aspectj'
-    implementation 'org.springframework.boot:spring-boot-starter-cache'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    // Source: https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-mail
-    implementation 'org.springframework.boot:spring-boot-starter-mail:4.0.2'
-    compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'com.mysql:mysql-connector-j'
-    annotationProcessor 'org.projectlombok:lombok'
-    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = "UTF-8"
+    }
 
-    // Source: https://mvnrepository.com/artifact/net.jthink/jaudiotagger
-    implementation("net.jthink:jaudiotagger:3.0.1")
-    implementation 'cn.hutool:hutool-all:5.8.43'
-    // Source: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
-    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
-    // Source: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-jackson
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
-    // Source: https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-impl
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0'
-    // Source: https://mvnrepository.com/artifact/com.aliyun.oss/aliyun-sdk-oss
-    implementation 'com.aliyun.oss:aliyun-sdk-oss:3.18.5'
-}
+    dependencies {
+        compileOnly "org.projectlombok:lombok"
+        annotationProcessor "org.projectlombok:lombok"
+        testImplementation "org.springframework.boot:spring-boot-starter-test"
+        // 使用 JUnit 5
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    }
 
-tasks.named('test') {
-    useJUnitPlatform()
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
+
+    //将FatJar输出目录到根项目 build/libs
+    tasks.withType(Jar).configureEach {
+        destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
+    }
 }

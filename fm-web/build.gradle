@@ -1,0 +1,32 @@
+plugins {
+    id "org.springframework.boot"  // 应用 Spring Boot 插件
+}
+
+// 明确指定主类
+springBoot {
+    mainClass = 'com.fantasy.fm.web.FantasyMusicApplication'
+}
+
+dependencies {
+    api project(':fm-service')
+
+    implementation "io.jsonwebtoken:jjwt-api:${jwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
+    implementation "com.baomidou:mybatis-plus-spring-boot4-starter:${mybatisPlusVersion}"  // MyBatis-Plus
+    implementation "com.baomidou:mybatis-plus-jsqlparser"
+    implementation "cn.hutool:hutool-all:${hutoolVersion}" // Hutool工具库
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-aspectj'
+    // Spring Cache和Redis
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
+}
+
+// 重命名 jar 避免冲突，并确保输出到根目录
+tasks.named('bootJar') {
+    archiveFileName = "FantasyMusic-${version}.jar"
+    destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
+}

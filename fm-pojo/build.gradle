@@ -1,0 +1,8 @@
+dependencies {
+    api project(':fm-common')
+
+    implementation "cn.hutool:hutool-all:${hutoolVersion}"
+    implementation "com.baomidou:mybatis-plus-spring-boot4-starter:${mybatisPlusVersion}"
+    implementation 'com.fasterxml.jackson.core:jackson-databind' // 常用工具
+    implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
+}

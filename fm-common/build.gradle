@@ -1,0 +1,24 @@
+dependencies {
+    implementation "cn.hutool:hutool-all:${hutoolVersion}"
+    implementation 'com.fasterxml.jackson.core:jackson-databind' // 常用工具
+
+    // Spring Boot Starter (Core, Web, Redis, Security)
+    implementation "io.jsonwebtoken:jjwt-api:${jwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-jackson:${jwtVersion}"
+    runtimeOnly "io.jsonwebtoken:jjwt-impl:${jwtVersion}"
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    // For PasswordEncoder
+    implementation 'org.springframework.security:spring-security-crypto'
+    annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
+
+    // Aliyun OSS
+    implementation "com.aliyun.oss:aliyun-sdk-oss:${aliyunOssVersion}"
+
+    // Mybatis Plus
+    implementation "com.baomidou:mybatis-plus-spring-boot4-starter:${mybatisPlusVersion}"
+
+    // 如果有 Spring 上下文相关的工具类
+    implementation 'org.springframework:spring-context'
+    implementation 'org.springframework:spring-web'
+}
