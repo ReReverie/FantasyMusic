@@ -6,3 +6,8 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind' // 常用工具
     implementation "org.springdoc:springdoc-openapi-starter-webmvc-ui:${springDocVersion}"
 }
+
+// 禁用 jar 任务，因为这只是内部库，不需要单独发布
+tasks.named('jar') {
+    enabled = false
+}
