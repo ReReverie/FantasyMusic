@@ -30,3 +30,8 @@ tasks.named('bootJar') {
     archiveFileName = "FantasyMusic-${version}.jar"
     destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
 }
+
+// 禁用 jar 任务，因为这只是内部库，不需要单独发布
+tasks.named('jar') {
+    enabled = false
+}
