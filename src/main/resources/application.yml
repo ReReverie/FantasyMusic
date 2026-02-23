@@ -35,7 +35,7 @@ spring:
             class: javax.net.ssl.SSLSocketFactory
             fallback: false
   profiles:
-    active: prod
+    active: prod # 默认使用项目目录下application-prod配置文件
   servlet:
     multipart:
       max-file-size: 100MB # 上传文件最大值
