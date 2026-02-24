@@ -118,15 +118,17 @@ springdoc:
     enabled: true
 ```
 
-浏览器访问http://localhost:8080/swagger-ui/index.html即可浏览接口文档
+浏览器访问: http://localhost:8080/swagger-ui/index.html
 
 ## 项目结构
 
+```
 FantasyMusic
 ├─ fm-common    公共模块（工具类、配置相关、常量、异常、统一返回）
 ├─ fm-pojo      实体类 / DTO / VO / QUERY
 ├─ fm-service   业务逻辑层（Service + Mapper）
 └─ fm-web       Web层（Controller、全局异常处理器切面类、配置类、启动类）
+```
 
 ## 项目架构 ##
 
