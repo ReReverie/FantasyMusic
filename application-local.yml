@@ -1,0 +1,48 @@
+# 要使用此配置文件，请确保在运行应用程序时指定 `--spring.profiles.active=local` 参数，或者在环境变量中设置 `SPRING_PROFILES_ACTIVE=local`。
+# 或者直接将此文件重命名为 application-prod.yml
+server:
+  port: 8080 # 请修改此处为你希望应用程序运行的端口号，默认是8080
+spring:
+  datasource:
+    mysql-connect:
+      host: localhost # 请修改此处为你的MySQL实际主机地址
+      port: 3306 # 请修改此处为你的MySQL实际端口号
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root # 请修改此处为你的MySQL实际用户名
+    password: 123456 # 请修改此处为你的MySQL实际用户名和密码
+  data:
+    redis:
+      host: localhost # 请修改此处为你的Redis实际主机地址
+      port: 6379 # 请修改此处为你的Redis实际端口号
+      # password: 123456 # Redis默认没有密码，如果你的Redis设置了密码，请替换为实际密码并取消注释
+      database: 0 # Redis默认使用0号数据库，如果你使用了其他数据库，请修改为实际数据库编号
+  mail:
+    host: your-mail-smtp-server.com # 请替换为你的SMTP提供商地址，例如smtp.qq.com
+    port: 465 # 由于云服务器提供商通常会屏蔽25端口，建议使用465（SSL）或587（TLS）端口，请根据你的SMTP服务器配置选择正确的端口
+    username: your-mail-username # 请替换为你的SMTP服务器用户名，例如你的邮箱地址
+    password: your-mail-password # 请替换为你的SMTP服务器密码，例如你的邮箱授权码
+    default-encoding: UTF-8
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+fm:
+  jwt:
+    secret-key: your-256-bit-secret-key-for-jwt-signing-12345  # 必须是256位长度
+    expire-time: 259200000 # token过期时间3天，单位毫秒
+    token-name: Authorization # token请求头名称,如果前端使用其他名称，请修改此处,否则请忽略
+  login:
+    is-enable-password-encrypt: true # 是否启用密码加密，如果用于本地调试，可以设置为false直接传递密码明文
+    # 你的RSA私钥字符串,此处应与前端加密时使用的公钥对应，且必须是PKCS#8格式的PEM字符串（去掉头尾和换行）,以下是例子
+    private-key-string: your-rsa-private-key-string-in-pkcs8-format-without-header-and-newlines
+  aliyunoss:
+    endpoint: your-oss-endpoint.aliyuncs.com # 请修改此处为你的阿里云OSS实际Endpoint，例如oss-cn-hangzhou.aliyuncs.com
+    bucket-name: your-oss-bucket-name # 请修改此处为你的阿里云OSS实际Bucket名称
+    access-key-id: your-oss-access-key-id # 请修改此处为你的阿里云OSS实际Access Key ID
+    access-key-secret: your-oss-access-key-secret # 请修改此处为你的阿里云OSS实际Access Key Secret
+    expire-time: 15 # OSS预签名URL过期时间，单位秒
+  mail:
+    from: ${spring.mail.username}  # 直接引用 spring 的配置
+    subject-prefix: 【Fantasy音乐】
+    code-expire-minutes: 5
