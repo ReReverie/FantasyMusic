@@ -52,3 +52,4 @@ docker-compose.yml
 /fm-common/src/test/
 /fm-service/src/test/
 /fm-web/src/test/
+/fm-web/logs/

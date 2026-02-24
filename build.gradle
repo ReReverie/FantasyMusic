@@ -61,4 +61,12 @@ subprojects {
     tasks.withType(Jar).configureEach {
         destinationDirectory = rootProject.layout.buildDirectory.dir("libs")
     }
+
+    //执行bootRun任务时从根目录读取配置
+    tasks.withType(JavaExec).tap {
+        configureEach {
+            workingDir = rootProject.projectDir
+        }
+    }
+
 }
