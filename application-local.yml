@@ -35,7 +35,7 @@ fm:
   login:
     is-enable-password-encrypt: true # 是否启用密码加密，如果用于本地调试，可以设置为false直接传递密码明文
     # 你的RSA私钥字符串,此处应与前端加密时使用的公钥对应，且必须是PKCS#8格式的PEM字符串（去掉头尾和换行）,以下是例子
-    private-key-string: your-rsa-private-key-string-in-pkcs8-format-without-header-and-newlines
+    private-key-string: MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgE.................................
   aliyunoss:
     endpoint: your-oss-endpoint.aliyuncs.com # 请修改此处为你的阿里云OSS实际Endpoint，例如oss-cn-hangzhou.aliyuncs.com
     bucket-name: your-oss-bucket-name # 请修改此处为你的阿里云OSS实际Bucket名称

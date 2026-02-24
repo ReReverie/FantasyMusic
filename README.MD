@@ -33,6 +33,26 @@
 - [Redis 8.4+](https://redis.io/downloads/)
 - Gradle 9.3 仓库内包含Gradle Wrapper
 
+### 前置步骤
+
+请使用[OpenSSL](https://www.openssl-library.org/source/)或者ssh-keygen生成对应的密钥对
+
+以下是OpenSSL步骤
+
+```bash
+# 生成 2048 位私钥（PEM）
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out private_key.pem
+```
+
+### RSA 私钥配置
+
+用于后端登录密码解密，需与前端保持一致。
+
+```yaml
+# application-local.yml 不能为多行字符串,需要将私钥内容转换为单行字符串
+private-key-string: MIIEvwIBADANBgkqhkiG9w0BAQEFAASCBKkwggSlAgE........必须为单行
+```
+
 ### 1. 克隆项目
 
 ```
