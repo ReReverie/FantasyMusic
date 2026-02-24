@@ -3,7 +3,7 @@
 
 一个基于 Spring Boot 开发的个人音乐平台系统，支持音乐的上传、下载、在线听歌、歌单管理等功能。
 
-**项目前端页面项目地址: [FantasyMusic-web](https://github.com/ReReverie/FantasyMusic-web)**
+**项目前端页面项目地址: [FantasyMusic-web](https://github.com/ReReverie/FantasyMusic-web)** 演示地址: [**FM-Demo**](https://music.pixmc.top/)
 
 ## 简介
 
