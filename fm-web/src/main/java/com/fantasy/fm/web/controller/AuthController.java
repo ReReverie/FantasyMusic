@@ -90,12 +90,16 @@ public class AuthController {
             return Result.error(AuthConstant.EMAIL_INVALID);
         }
 
-        //生成6位数字验证码
-        String code = RandomUtil.randomNumbers(6);
 
-        //将验证码存入Redis, 有效期5分钟
-        String redisKey = RedisCacheConstant.EMAIL_CODE + "::" + email;
-        redisCacheUtil.set(redisKey, code, 5L, TimeUnit.MINUTES);
+        String code = redisCacheUtil.get(RedisCacheConstant.EMAIL_CODE + "::" + email, String.class);
+        //如果同一个邮箱在5分钟内已经发送过验证码了，就不再生成新的验证码了，直接使用之前的验证码继续发送邮件
+        if (code == null) {
+            //生成6位数字验证码
+            code = RandomUtil.randomNumbers(6);
+            //将验证码存入Redis, 有效期5分钟
+            String redisKey = RedisCacheConstant.EMAIL_CODE + "::" + email;
+            redisCacheUtil.set(redisKey, code, 5L, TimeUnit.MINUTES);
+        }
 
         //发送验证码到用户邮箱
         Result<Void> result = sendCode2Email(email, code, "注册", rateLimitKey);
@@ -134,12 +138,16 @@ public class AuthController {
             return Result.success(200, AuthConstant.FAKE_CODE_SEND_MESSAGE);
         }
 
-        //生成6位数字验证码
-        String code = RandomUtil.randomNumbers(6);
+        String code = redisCacheUtil.get(RedisCacheConstant.RESET_EMAIL_CODE + "::" + entity.getId(), String.class);
+        //如果同一个用户在5分钟内已经发送过验证码了，就不再生成新的验证码了，直接使用之前的验证码继续发送邮件
+        if (code == null) {
+            //生成6位数字验证码
+            code = RandomUtil.randomNumbers(6);
 
-        //将验证码存入Redis, 有效期5分钟
-        String redisKey = RedisCacheConstant.RESET_EMAIL_CODE + "::" + entity.getId();
-        redisCacheUtil.set(redisKey, code, 5L, TimeUnit.MINUTES);
+            //将验证码存入Redis, 有效期5分钟
+            String redisKey = RedisCacheConstant.RESET_EMAIL_CODE + "::" + entity.getId();
+            redisCacheUtil.set(redisKey, code, 5L, TimeUnit.MINUTES);
+        }
 
         //发送验证码到用户邮箱
         Result<Void> result = sendCode2Email(entity.getEmail(), code, "找回", rateLimitKey);
