@@ -1,5 +1,6 @@
 package com.fantasy.fm.web.config;
 
+import com.fantasy.fm.common.properties.CorsProperties;
 import com.fantasy.fm.web.interceptor.LoginInterceptor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final LoginInterceptor loginInterceptor;
+    private final CorsProperties corsProperties;
 
     /**
      * 注册拦截器
@@ -38,21 +40,15 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     /**
-     * 启用全局CORS支持
+     * 全局CORS支持
      *
      * @param registry CorsRegistry对象
      */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins(
-                        "http://localhost:8080",      // 本地开发
-                        "http://localhost:5173",      // 前端开发服务器
-                        "http://localhost:80",      // nginx
-                        "http://localhost:443"/*,      // nginx
-                        "https://music.pixmc.top"    // 生产域名*/
-                )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                .allowedHeaders("*");
+                .allowedOrigins(corsProperties.getOrigins().toArray(new String[0]))
+                .allowedMethods(corsProperties.getMethods().toArray(new String[0]))
+                .allowedHeaders(corsProperties.getHeaders());
     }
 }

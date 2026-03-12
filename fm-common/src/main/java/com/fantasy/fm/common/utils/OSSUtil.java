@@ -7,7 +7,7 @@ import com.aliyun.oss.OSSException;
 import com.aliyun.oss.model.GeneratePresignedUrlRequest;
 import com.aliyun.oss.model.PutObjectRequest;
 import com.aliyun.oss.model.ResponseHeaderOverrides;
-import com.fantasy.fm.common.properties.OssProperties;
+import com.fantasy.fm.common.properties.OSSProperties;
 import jakarta.annotation.PreDestroy;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,12 +21,12 @@ import java.util.Date;
 @Slf4j
 @Component
 public class OSSUtil {
-    private final OssProperties ossProperties;
+    private final OSSProperties ossProperties;
     //单例复用,避免每次上传都创建客户端
     private final OSS client;
 
     //自定义构造方法注入属性
-    private OSSUtil(OssProperties properties) {
+    private OSSUtil(OSSProperties properties) {
         this.ossProperties = properties;
         this.client = new OSSClientBuilder().build(
                 properties.getEndpoint(),
