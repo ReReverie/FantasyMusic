@@ -52,14 +52,13 @@ public class MusicInfoController {
     }
 
     /**
-     * 根据条件查询音乐
+     * 搜索音乐库
      */
-    @Operation(summary = "根据条件查询音乐", description = "根据条件查询音乐列表")
+    @Operation(summary = "搜索音乐库", description = "搜索音乐库")
     @GetMapping("/search")
-    public Result<PageDTO<MusicVO>> queryMusicPageByCondition(MusicPageQuery query) {
-        log.info("分页查询音乐列表: pageNum={}, pageSize={}, Condition= Title: {}, Artist:{}",
-                query.getPageNum(), query.getPageSize(), query.getTitle(), query.getArtist());
-        return Result.success(musicInfoService.getMusicPageByCondition(query));
+    public Result<List<MusicVO>> searchMusic(MusicPageQuery query) {
+        log.info("分页查询音乐列表: pageNum={}, pageSize={}", query.getPageNum(), query.getPageSize());
+        return Result.success(musicInfoService.searchMusic(query));
     }
 
     /**

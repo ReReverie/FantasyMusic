@@ -29,6 +29,15 @@ public class PageDTO<T> {
     private List<T> list; // 当前页数据列表
 
     /**
+     * 计算分页查询的起始索引
+     *
+     * @return 起始索引
+     */
+    private int from() {
+        return (pageNum - 1) * pageSize;
+    }
+
+    /**
      * 返回空分页结果
      *
      * @param p    MybatisPlus的分页结果

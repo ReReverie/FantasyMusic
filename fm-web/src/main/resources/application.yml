@@ -94,3 +94,7 @@ fm:
     origins: ${fm.cors.origins:http://localhost:8080,http://localhost:5173,http://localhost:80,http://localhost:443}
     methods: ${fm.cors.methods:GET,POST,PUT,DELETE,OPTIONS}
     headers: ${fm.cors.headers:"*"}
+  elasticsearch:
+    host: ${spring.elasticsearch.host}
+    username: ${spring.elasticsearch.username}
+    password: ${spring.elasticsearch.password}

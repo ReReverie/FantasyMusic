@@ -2,6 +2,13 @@ package com.fantasy.fm.service.service.impl;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+import co.elastic.clients.elasticsearch.core.search.Highlight;
+import co.elastic.clients.elasticsearch.core.search.HighlightField;
+import co.elastic.clients.util.NamedValue;
+import co.elastic.clients.util.ObjectBuilder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -41,12 +48,14 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -58,6 +67,7 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     private final MusicListTrackMapper musicListTrackMapper;
     private final RedisCacheUtil redisCacheUtil;
     private final OSSUtil ossUtil;
+    private final ElasticsearchClient client;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -251,17 +261,81 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
     }
 
     @Override
-    public PageDTO<MusicVO> getMusicPageByCondition(MusicPageQuery query) {
-        // 构建分页查询对象
-        Page<Music> page = Page.of(query.getPageNum(), query.getPageSize());
-        //构建查询条件
-        LambdaQueryWrapper<Music> like = new LambdaQueryWrapper<Music>()
-                .like(Music::getTitle, query.getTitle())
-                .like(Music::getArtist, query.getArtist());
-        // 执行分页查询
-        page = musicMapper.selectPage(page, like);
-        // 将分页结果转换为 PageDTO<MusicVO>并返回
-        return PageDTO.of(page, MusicVO.class);
+    public List<MusicVO> searchMusic(MusicPageQuery query) {
+        if (StrUtil.isBlank(query.getKeyword())) {
+            return List.of();
+        }
+        // 构建查询条件
+        SearchRequest req = new SearchRequest.Builder()
+                .index("music_index")
+                .from(query.from())
+                .size(query.getPageSize().intValue())
+                .query(q -> q
+                        .bool(b -> b
+                                .should(s -> s
+                                        .match(m -> m
+                                                .field("title")
+                                                .query(query.getKeyword())
+                                                .analyzer("ik_max_word")
+                                                .boost(10.0f)))
+                                .should(s -> s
+                                        .match(m -> m
+                                                .field("artist")
+                                                .query(query.getKeyword())
+                                                .analyzer("ik_max_word")
+                                                .boost(5.0f)))
+                                .should(s -> s
+                                        .match(m -> m
+                                                .field("album")
+                                                .query(query.getKeyword())
+                                                .analyzer("ik_max_word")
+                                                .boost(1.0f)))
+                        ))
+                .highlight(h -> h
+                        .preTags("<em>")
+                        .postTags("</em>")
+                        .fields(
+                                NamedValue.of("title", HighlightField.of(hf -> hf)),
+                                NamedValue.of("artist", HighlightField.of(hf -> hf)),
+                                NamedValue.of("album", HighlightField.of(hf -> hf))
+                        )
+                )
+                .build();
+        //发送ES查询请求并处理结果
+        SearchResponse<Music> resp = null;
+        try {
+            resp = client.search(req, Music.class);
+        } catch (IOException e) {
+            log.error("ES查询失败: ", e);
+            return List.of();
+        }
+        //处理搜索结果并转换为MusicVO列表
+        //返回结果
+        return resp.hits().hits().stream().map(hit -> {
+            MusicVO vo = new MusicVO();
+            if (hit.source() != null) {
+                BeanUtils.copyProperties(hit.source(), vo);
+            }
+
+            //处理高亮字段
+            if (hit.highlight() != null) {
+                List<String> titleHighlights = hit.highlight().get("title") != null ? hit.highlight().get("title") : null;
+                List<String> artistHighlights = hit.highlight().get("artist") != null ? hit.highlight().get("artist") : null;
+                List<String> albumHighlights = hit.highlight().get("album") != null ? hit.highlight().get("album") : null;
+
+                if (CollUtil.isNotEmpty(titleHighlights)) {
+                    vo.setTitle(titleHighlights.get(0)); //取第一个高亮片段
+                }
+                if (CollUtil.isNotEmpty(artistHighlights)) {
+                    vo.setArtist(artistHighlights.get(0));
+                }
+                if (CollUtil.isNotEmpty(albumHighlights)) {
+                    vo.setAlbum(albumHighlights.get(0));
+                }
+            }
+
+            return vo;
+        }).toList();
     }
 
     @Override

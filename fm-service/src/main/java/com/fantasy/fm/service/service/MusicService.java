@@ -67,7 +67,7 @@ public interface MusicService extends IService<Music> {
      * @param query 查询条件
      * @return 音乐分页结果
      */
-    PageDTO<MusicVO> getMusicPageByCondition(MusicPageQuery query);
+    List<MusicVO> searchMusic(MusicPageQuery query);
 
     /**
      * 根据音乐ID获取音乐封面

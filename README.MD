@@ -16,6 +16,7 @@
 - 用户权限（普通用户 / 管理员）
 - 音乐上传（解析音频元数据）
 - 在线音乐播放
+- 音乐搜索 (基于ElasticSearch)
 - 音乐下载（权限控制）
 - 歌单管理
 - 用户信息管理
@@ -31,8 +32,10 @@
 - [JDK 17+](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
 - [MySQL 8](https://dev.mysql.com/downloads/installer/)
 - [Redis 8.4+](https://redis.io/downloads/)
+- [ElasticSearch 9.2+](https://www.elastic.co/cn/downloads/elasticsearch)
 - Gradle 9.3 仓库内包含Gradle Wrapper
 
+(推荐在Docker中部署本项目以及MySQL、Redis和ElasticSearch)
 ### 前置步骤
 
 请使用[OpenSSL](https://www.openssl-library.org/source/)或者ssh-keygen生成对应的密钥对
@@ -62,7 +65,7 @@ cd FantasyMusic
 
 ### 2.创建数据库
 
-项目提供了[数据库](sql/fantasy_music_database.sql)用于初始化数据库
+注意: 项目提供了[数据库](database/fantasy_music_database.sql)需要用户手动初始化MySql数据库, 而ElasticSearch则通过实现ApplicationRunner来自动创建ElasticSearch索引库[索引库](database/ES_mappings_music_index.json),因此不需要用户操作
 
 ```bash
 # 登录 MySQL
@@ -156,6 +159,7 @@ MySQL + Redis + OSS
 - [MyBatis Plus](https://baomidou.com/) 简化数据库操作的 ORM 框架，减少大量重复的 CRUD 代码，提高开发效率。
 - [Jaudiotagger](https://bitbucket.org/ijabz/jaudiotagger) 解析音乐文件的元数据，例如歌曲名、歌手、专辑、时长等信息。
 - [JSON Web Token](https://jwt.io/) 实现用户登录认证和身份校验，保证接口访问的安全性。
+- [ElasticSearch](https://www.elastic.co/cn/products/elasticsearch) 用于实现音乐搜索功能，支持基于关键词的快速搜索和模糊搜索。
 - OSS（阿里云对象存储）用于存储音乐文件，实现文件的上传、下载与访问管理。
 
 数据库：
@@ -183,7 +187,6 @@ MySQL + Redis + OSS
 - 音乐分类
 
 - 音乐推荐系统（大模型智能推荐、根据歌单推荐、基于用户行为推荐）
-- 智能音乐搜索
 
 ## 许可证 ##
 

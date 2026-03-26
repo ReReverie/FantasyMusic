@@ -21,4 +21,6 @@ dependencies {
     // 如果有 Spring 上下文相关的工具类
     implementation 'org.springframework:spring-context'
     implementation 'org.springframework:spring-web'
+
+    api 'co.elastic.clients:elasticsearch-java:9.2.3'
 }
