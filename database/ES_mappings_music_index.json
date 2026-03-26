@@ -1,0 +1,37 @@
+{
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "long",
+        "index": false
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
+      },
+      "artist": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
+      },
+      "album": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart"
+      },
+      "durationMs": {
+        "type": "long",
+        "index": false
+      },
+      "releaseYear": {
+        "type": "keyword",
+        "index": false
+      },
+      "coverUrl": {
+        "type": "keyword",
+        "index": false
+      }
+    }
+  }
+}
