@@ -5,10 +5,8 @@ import cn.hutool.core.util.StrUtil;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
-import co.elastic.clients.elasticsearch.core.search.Highlight;
 import co.elastic.clients.elasticsearch.core.search.HighlightField;
 import co.elastic.clients.util.NamedValue;
-import co.elastic.clients.util.ObjectBuilder;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.OrderItem;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -55,7 +53,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.function.Function;
 
 @Slf4j
 @Service
@@ -120,6 +117,14 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
                 .fileHash(fileHash)
                 .build();
         musicManagerMapper.insert(mfi);
+        //将音乐信息索引到ES中
+        try {
+            client.index(i -> i.index("music_index")
+                    .id(musicId.toString())
+                    .document(musicInfo));
+        } catch (IOException e) {
+            log.error("索引音乐信息到ES失败，音乐ID: {}", musicId, e);
+        }
     }
 
     /**
@@ -231,6 +236,12 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         //同时删除对应的MusicListTrack记录
         musicListTrackMapper.delete(new LambdaQueryWrapper<MusicListTrack>()
                 .eq(MusicListTrack::getMusicId, musicId));
+        //删除ES中的文档
+        try {
+            client.delete(d -> d.index("music_index").id(musicId.toString()));
+        } catch (IOException e) {
+            log.error("删除ES文档失败，音乐ID: {}", musicId, e);
+        }
     }
 
     private void deleteFile(String fileUrl) {
@@ -419,6 +430,14 @@ public class MusicServiceImpl extends ServiceImpl<MusicMapper, Music> implements
         //删除对应的MusicListTrack记录
         musicListTrackMapper.delete(new LambdaQueryWrapper<MusicListTrack>()
                 .in(MusicListTrack::getMusicId, ids));
+        //删除ES中的文档
+        for (Long id : ids) {
+            try {
+                client.delete(d -> d.index("music_index").id(id.toString()));
+            } catch (IOException e) {
+                log.error("删除ES文档失败，音乐ID: {}", id, e);
+            }
+        }
     }
 
     @Override
