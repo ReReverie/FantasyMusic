@@ -53,3 +53,5 @@ docker-compose.yml
 /fm-service/src/test/
 /fm-web/src/test/
 /fm-web/logs/
+/application-test.yml
+/fm-web/src/main/resources/application-test.yml
