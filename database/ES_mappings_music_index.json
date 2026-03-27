@@ -8,17 +8,35 @@
       "title": {
         "type": "text",
         "analyzer": "ik_max_word",
-        "search_analyzer": "ik_smart"
+        "search_analyzer": "ik_smart",
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          }
+        }
       },
       "artist": {
         "type": "text",
         "analyzer": "ik_max_word",
-        "search_analyzer": "ik_smart"
+        "search_analyzer": "ik_smart",
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          }
+        }
       },
       "album": {
         "type": "text",
         "analyzer": "ik_max_word",
-        "search_analyzer": "ik_smart"
+        "search_analyzer": "ik_smart",
+        "fields": {
+          "suggest": {
+            "type": "completion",
+            "analyzer": "ik_max_word"
+          }
+        }
       },
       "durationMs": {
         "type": "long",
@@ -31,6 +49,10 @@
       "coverUrl": {
         "type": "keyword",
         "index": false
+      },
+      "suggest": {
+        "type": "completion",
+        "analyzer": "ik_max_word"
       }
     }
   }

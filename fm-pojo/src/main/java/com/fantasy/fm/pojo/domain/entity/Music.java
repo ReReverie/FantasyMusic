@@ -3,6 +3,7 @@ package com.fantasy.fm.pojo.domain.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +19,7 @@ import java.io.Serializable;
 @TableName("music")
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true) // 忽略未知属性，防止反序列化时出错
 public class Music implements Serializable {
     @TableId(type = IdType.AUTO)
     private Long id;

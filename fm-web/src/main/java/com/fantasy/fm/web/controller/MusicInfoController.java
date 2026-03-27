@@ -11,10 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -49,16 +46,6 @@ public class MusicInfoController {
     public Result<PageDTO<MusicVO>> queryMusicPage(MusicPageQuery query) {
         log.info("分页查询音乐列表: pageNum={}, pageSize={}", query.getPageNum(), query.getPageSize());
         return Result.success(musicInfoService.queryMusicPage(query));
-    }
-
-    /**
-     * 搜索音乐库
-     */
-    @Operation(summary = "搜索音乐库", description = "搜索音乐库")
-    @GetMapping("/search")
-    public Result<List<MusicVO>> searchMusic(MusicPageQuery query) {
-        log.info("分页查询音乐列表: pageNum={}, pageSize={}", query.getPageNum(), query.getPageSize());
-        return Result.success(musicInfoService.searchMusic(query));
     }
 
     /**
