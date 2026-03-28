@@ -121,9 +121,9 @@ public class SearchServiceImpl implements SearchService {
                                     .suggesters("music_suggest", sug -> sug
                                             .prefix(prefix)
                                             .completion(c -> c
-                                                    .field("suggest")
-                                                    .size(10)
-                                                    .skipDuplicates(true)
+                                                    .field("suggest") // 指定建议字段
+                                                    .size(10) // 返回最多10条建议
+                                                    .skipDuplicates(true) // 去重
                                             )
                                     )
                             )

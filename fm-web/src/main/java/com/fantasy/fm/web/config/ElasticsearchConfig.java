@@ -5,16 +5,17 @@ import co.elastic.clients.elasticsearch.indices.CreateIndexResponse;
 import com.fantasy.fm.common.properties.ElasticsearchProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.ConnectTimeoutException;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 @Configuration
@@ -44,15 +45,24 @@ class IndexInitializer implements ApplicationRunner {
     private static final String MAPPING_FILE_PATH = "database/ES_mappings_music_index.json";  // 使用 / 分隔
 
     @Override
-    public void run(@NonNull ApplicationArguments args) throws Exception {
+    public void run(@NonNull ApplicationArguments args){
         createIndexIfNotExists();
     }
 
-    private void createIndexIfNotExists() throws Exception {
+    private void createIndexIfNotExists() {
         // 检查索引是否存在
-        boolean indexExists = elasticsearchClient.indices()
-                .exists(e -> e.index(INDEX_NAME))
-                .value();
+        boolean indexExists = false;
+        try {
+            indexExists = elasticsearchClient.indices()
+                    .exists(e -> e.index(INDEX_NAME))
+                    .value();
+        } catch (ConnectTimeoutException e) {
+            log.error("连接ES服务器超时，请检查ES服务器是否正常运行, 程序退出:{}", e.getMessage());
+            System.exit(1); // 退出应用，防止继续运行
+        } catch (IOException e) {
+            log.error("检查索引存在性时发生IO异常, 程序退出:{}", e.getMessage());
+            System.exit(1); // 退出应用，防止继续运行
+        }
 
         if (indexExists) {
             log.info("ES索引 {} 已存在，跳过创建", INDEX_NAME);
